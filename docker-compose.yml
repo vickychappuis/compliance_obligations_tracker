@@ -26,7 +26,14 @@ services:
       db:
         condition: service_healthy
 
-  # frontend service is added in Phase 4 once the Next.js app exists.
+  frontend:
+    build: ./frontend
+    environment:
+      API_BASE_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   db_data:
