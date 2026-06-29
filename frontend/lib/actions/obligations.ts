@@ -63,12 +63,34 @@ export async function createObligationAction(
   redirect(`/obligations/${id}`);
 }
 
+function parseUpdate(
+  formData: FormData,
+): Omit<ObligationInput, "company_tax_id"> | { error: string } {
+  const title = String(formData.get("title") ?? "").trim();
+  const owner = String(formData.get("owner") ?? "").trim();
+  const due_date = String(formData.get("due_date") ?? "").trim();
+  const type = String(formData.get("type") ?? "").trim() as ObligationType;
+
+  if (!title || !owner || !due_date || !type) {
+    return { error: "Please complete all required fields." };
+  }
+
+  return {
+    type,
+    title,
+    description: String(formData.get("description") ?? "").trim(),
+    due_date,
+    owner,
+    requires_document: formData.get("requires_document") === "on",
+  };
+}
+
 export async function updateObligationAction(
   id: string,
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const parsed = parseInput(formData);
+  const parsed = parseUpdate(formData);
   if ("error" in parsed) return parsed;
 
   try {
