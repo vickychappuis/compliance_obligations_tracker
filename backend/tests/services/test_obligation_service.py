@@ -1,0 +1,150 @@
+from __future__ import annotations
+
+from datetime import date, timedelta
+
+import pytest
+from sqlalchemy.orm import Session
+
+from app.domain.errors import DocumentRequired, InvalidTransition, NotFound, VersionConflict
+from app.domain.obligation import ObligationType, Status
+from app.services.obligation_service import (
+    ObligationCreate,
+    ObligationPatch,
+    ObligationService,
+)
+
+TODAY = date(2026, 6, 27)
+
+
+def _new(
+    *,
+    requires_document: bool = False,
+    due_date: date = TODAY + timedelta(days=10),
+    owner: str = "Jane Founder",
+    type: ObligationType = ObligationType.ANNUAL_REPORT,
+) -> ObligationCreate:
+    return ObligationCreate(
+        type=type,
+        title="Annual report",
+        description="File it.",
+        due_date=due_date,
+        owner=owner,
+        requires_document=requires_document,
+        company_tax_id="123456789",
+    )
+
+
+def test_create_starts_pending_with_audit(session: Session) -> None:
+    svc = ObligationService(session)
+    view = svc.create(_new())
+    assert view.row.status == Status.PENDING.value
+    assert view.row.version == 1
+    assert len(view.audit) == 1
+    assert view.audit[0].from_status is None
+    assert view.audit[0].to_status == Status.PENDING.value
+    assert view.allowed_transitions == [Status.IN_PROGRESS]
+
+
+def test_change_state_bumps_version_and_records_audit(session: Session) -> None:
+    svc = ObligationService(session)
+    view = svc.create(_new())
+    updated = svc.change_state(view.row.id, Status.IN_PROGRESS, expected_version=1)
+    assert updated.row.status == Status.IN_PROGRESS.value
+    assert updated.row.version == 2
+    assert [e.to_status for e in updated.audit] == [
+        Status.PENDING.value,
+        Status.IN_PROGRESS.value,
+    ]
+    assert updated.audit[-1].from_status == Status.PENDING.value
+
+
+def test_invalid_transition_is_rejected(session: Session) -> None:
+    svc = ObligationService(session)
+    view = svc.create(_new())
+    with pytest.raises(InvalidTransition):
+        svc.change_state(view.row.id, Status.DONE, expected_version=1)
+    session.refresh(view.row)
+    assert view.row.status == Status.PENDING.value
+    assert view.row.version == 1
+
+
+def test_document_gate_blocks_then_allows_submit(session: Session) -> None:
+    svc = ObligationService(session)
+    view = svc.create(_new(requires_document=True))
+    svc.change_state(view.row.id, Status.IN_PROGRESS, expected_version=1)
+    with pytest.raises(DocumentRequired):
+        svc.change_state(view.row.id, Status.SUBMITTED, expected_version=2)
+
+    svc.attach_document(view.row.id, "filing.pdf", "application/pdf")
+    submitted = svc.change_state(view.row.id, Status.SUBMITTED, expected_version=2)
+    assert submitted.row.status == Status.SUBMITTED.value
+    assert submitted.has_document is True
+
+
+def test_version_conflict_on_stale_expected_version(session: Session) -> None:
+    svc = ObligationService(session)
+    view = svc.create(_new())
+    svc.change_state(view.row.id, Status.IN_PROGRESS, expected_version=1)
+    with pytest.raises(VersionConflict):
+        svc.change_state(view.row.id, Status.SUBMITTED, expected_version=1)
+
+
+def test_get_and_change_missing_raises_not_found(session: Session) -> None:
+    svc = ObligationService(session)
+    with pytest.raises(NotFound):
+        svc.get_view("does-not-exist")
+    with pytest.raises(NotFound):
+        svc.change_state("does-not-exist", Status.IN_PROGRESS, expected_version=1)
+
+
+def test_overdue_is_derived(session: Session) -> None:
+    svc = ObligationService(session)
+    past = svc.create(_new(due_date=TODAY - timedelta(days=1)))
+    assert svc.get_view(past.row.id) is not None
+    views = svc.list_views(today=TODAY)
+    assert views[0].overdue is True
+
+
+def test_list_is_sorted_by_due_date_and_filters(session: Session) -> None:
+    svc = ObligationService(session)
+    svc.create(_new(due_date=TODAY + timedelta(days=30), owner="A"))
+    svc.create(_new(due_date=TODAY + timedelta(days=5), owner="B"))
+    svc.create(_new(due_date=TODAY - timedelta(days=2), owner="A"))
+
+    all_views = svc.list_views(today=TODAY)
+    due_dates = [v.row.due_date for v in all_views]
+    assert due_dates == sorted(due_dates)
+
+    by_owner = svc.list_views(owner="A", today=TODAY)
+    assert {v.row.owner for v in by_owner} == {"A"}
+    assert len(by_owner) == 2
+
+    overdue_only = svc.list_views(overdue=True, today=TODAY)
+    assert len(overdue_only) == 1
+    assert overdue_only[0].overdue is True
+
+
+def test_update_fields_does_not_change_status(session: Session) -> None:
+    svc = ObligationService(session)
+    view = svc.create(_new())
+    updated = svc.update_fields(view.row.id, ObligationPatch(title="Renamed", owner="New"))
+    assert updated.row.title == "Renamed"
+    assert updated.row.owner == "New"
+    assert updated.row.status == Status.PENDING.value
+
+
+def test_summary_counts(session: Session) -> None:
+    svc = ObligationService(session)
+    svc.create(_new(due_date=TODAY - timedelta(days=1)))
+    svc.create(_new(due_date=TODAY + timedelta(days=10)))
+    done = svc.create(_new(due_date=TODAY + timedelta(days=10)))
+    svc.change_state(done.row.id, Status.IN_PROGRESS, expected_version=1)
+    svc.change_state(done.row.id, Status.SUBMITTED, expected_version=2)
+    svc.change_state(done.row.id, Status.DONE, expected_version=3)
+
+    s = svc.summary(today=TODAY)
+    assert s.total == 3
+    assert s.overdue == 1
+    assert s.upcoming == 1
+    assert s.by_status[Status.DONE.value] == 1
+    assert s.by_status[Status.PENDING.value] == 2
