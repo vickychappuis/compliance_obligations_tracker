@@ -28,9 +28,9 @@ def _error_body(error: DomainError) -> dict:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from app.data.database import create_all
+    from app.data.database import run_migrations
 
-    create_all()
+    run_migrations()
     yield
 
 
