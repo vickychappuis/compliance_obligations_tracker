@@ -62,13 +62,28 @@ class ObligationRepository:
         return entry
 
     def add_document(
-        self, obligation_id: str, filename: str, content_type: str
+        self,
+        obligation_id: str,
+        filename: str,
+        content_type: str,
+        storage_path: str,
+        size: int,
     ) -> DocumentRow:
         document = DocumentRow(
             obligation_id=obligation_id,
             filename=filename,
             content_type=content_type,
+            storage_path=storage_path,
+            size=size,
         )
         self.session.add(document)
         self.session.flush()
         return document
+
+    def get_document(self, obligation_id: str, document_id: str) -> DocumentRow | None:
+        return self.session.scalars(
+            select(DocumentRow).where(
+                DocumentRow.id == document_id,
+                DocumentRow.obligation_id == obligation_id,
+            )
+        ).first()

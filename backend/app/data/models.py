@@ -67,6 +67,8 @@ class DocumentRow(Base):
     )
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(100), default="application/octet-stream")
+    storage_path: Mapped[str] = mapped_column(String(512), nullable=False)
+    size: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     obligation: Mapped[ObligationRow] = relationship(back_populates="documents")

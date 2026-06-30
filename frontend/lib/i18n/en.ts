@@ -58,7 +58,8 @@ export const en = {
     submitBlocked: "A document is required before this can be submitted.",
     attachDocument: "Attach document",
     attach: "Attach",
-    filename: "File name",
+    file: "File",
+    download: "Download",
   },
   form: {
     createTitle: "New obligation",

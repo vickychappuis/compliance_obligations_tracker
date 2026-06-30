@@ -2,16 +2,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Iterable
+from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.data.models import AuditEntryRow, DocumentRow, ObligationRow
 from app.data.repository import ObligationRepository
 from app.domain.errors import NotFound, VersionConflict
 from app.domain.obligation import Obligation, ObligationType, Status
 from app.domain.rules import assert_document_gate, is_overdue
 from app.domain.state_machine import allowed_transitions, validate_transition
+from app.integrations.storage import DocumentStorage, get_storage
 
 
 @dataclass
@@ -57,9 +59,16 @@ class Summary:
 class ObligationService:
     UPCOMING_WINDOW_DAYS = 30
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, storage: DocumentStorage | None = None) -> None:
         self.session = session
         self.repo = ObligationRepository(session)
+        self._storage = storage
+
+    @property
+    def storage(self) -> DocumentStorage:
+        if self._storage is None:
+            self._storage = get_storage(get_settings())
+        return self._storage
 
     def create(self, data: ObligationCreate) -> ObligationView:
         row = ObligationRow(
@@ -119,13 +128,24 @@ class ObligationService:
         return self._view(row)
 
     def attach_document(
-        self, obligation_id: str, filename: str, content_type: str
+        self, obligation_id: str, filename: str, content_type: str, data: bytes
     ) -> ObligationView:
         row = self._require(obligation_id)
-        self.repo.add_document(obligation_id, filename, content_type)
+        storage_path = f"{obligation_id}/{uuid4().hex}-{filename}"
+        self.storage.upload(storage_path, data, content_type)
+        self.repo.add_document(
+            obligation_id, filename, content_type, storage_path, len(data)
+        )
         self.session.commit()
         self.session.refresh(row)
         return self._view(row)
+
+    def document_download_url(self, obligation_id: str, document_id: str) -> str:
+        self._require(obligation_id)
+        document = self.repo.get_document(obligation_id, document_id)
+        if document is None:
+            raise NotFound(document_id)
+        return self.storage.signed_url(document.storage_path)
 
     def get_view(self, obligation_id: str) -> ObligationView:
         return self._view(self._require(obligation_id))

@@ -16,6 +16,7 @@ export interface DocumentInfo {
   id: string;
   filename: string;
   content_type: string;
+  size: number;
   uploaded_at: string;
 }
 

@@ -12,6 +12,7 @@ from app.services.obligation_service import (
     ObligationPatch,
     ObligationService,
 )
+from tests.fakes import FakeStorage
 
 TODAY = date(2026, 6, 27)
 
@@ -69,16 +70,39 @@ def test_invalid_transition_is_rejected(session: Session) -> None:
 
 
 def test_document_gate_blocks_then_allows_submit(session: Session) -> None:
-    svc = ObligationService(session)
+    storage = FakeStorage()
+    svc = ObligationService(session, storage=storage)
     view = svc.create(_new(requires_document=True))
     svc.change_state(view.row.id, Status.IN_PROGRESS, expected_version=1)
     with pytest.raises(DocumentRequired):
         svc.change_state(view.row.id, Status.SUBMITTED, expected_version=2)
 
-    svc.attach_document(view.row.id, "filing.pdf", "application/pdf")
+    svc.attach_document(view.row.id, "filing.pdf", "application/pdf", b"%PDF-1.7 data")
     submitted = svc.change_state(view.row.id, Status.SUBMITTED, expected_version=2)
     assert submitted.row.status == Status.SUBMITTED.value
     assert submitted.has_document is True
+
+
+def test_attach_document_uploads_bytes_and_signs_url(session: Session) -> None:
+    storage = FakeStorage()
+    svc = ObligationService(session, storage=storage)
+    view = svc.create(_new(requires_document=True))
+
+    attached = svc.attach_document(view.row.id, "filing.pdf", "application/pdf", b"abc")
+    document = attached.documents[0]
+    assert document.size == 3
+    assert document.storage_path in storage.uploaded
+    assert storage.uploaded[document.storage_path] == (b"abc", "application/pdf")
+
+    url = svc.document_download_url(view.row.id, document.id)
+    assert url == f"https://signed.example/{document.storage_path}"
+
+
+def test_document_download_url_missing_raises_not_found(session: Session) -> None:
+    svc = ObligationService(session, storage=FakeStorage())
+    view = svc.create(_new())
+    with pytest.raises(NotFound):
+        svc.document_download_url(view.row.id, "does-not-exist")
 
 
 def test_version_conflict_on_stale_expected_version(session: Session) -> None:

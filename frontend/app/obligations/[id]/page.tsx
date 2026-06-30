@@ -6,7 +6,7 @@ import { AuditHistory } from "@/components/obligations/AuditHistory";
 import { StatusBadge } from "@/components/obligations/StatusBadge";
 import { TransitionControls } from "@/components/obligations/TransitionControls";
 import { Badge, Card } from "@/components/ui";
-import { ApiError, getObligation } from "@/lib/api";
+import { ApiError, getDocumentUrl, getObligation } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/i18n";
 
@@ -25,6 +25,21 @@ export default async function ObligationDetailPage({
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
+
+  const documentUrls = new Map<string, string>(
+    (
+      await Promise.all(
+        ob.documents.map(async (doc) => {
+          try {
+            const { url } = await getDocumentUrl(id, doc.id);
+            return [doc.id, url] as const;
+          } catch {
+            return null;
+          }
+        }),
+      )
+    ).filter((entry): entry is readonly [string, string] => entry !== null),
+  );
 
   return (
     <div className="space-y-6">
@@ -71,9 +86,24 @@ export default async function ObligationDetailPage({
         </h2>
         {ob.documents.length > 0 ? (
           <ul className="mb-4 space-y-1 text-sm text-slate-700">
-            {ob.documents.map((doc) => (
-              <li key={doc.id}>📎 {doc.filename}</li>
-            ))}
+            {ob.documents.map((doc) => {
+              const url = documentUrls.get(doc.id);
+              return (
+                <li key={doc.id} className="flex items-center gap-2">
+                  <span>📎 {doc.filename}</span>
+                  {url && (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-slate-500 hover:text-slate-900 hover:underline"
+                    >
+                      {dict.detail.download}
+                    </a>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="mb-4 text-sm text-slate-500">{dict.detail.noDocument}</p>

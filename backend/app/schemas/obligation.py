@@ -42,11 +42,6 @@ class TransitionRequest(BaseModel):
     expected_version: int = Field(ge=1)
 
 
-class DocumentRequest(BaseModel):
-    filename: str = Field(min_length=1, max_length=255)
-    content_type: str = "application/octet-stream"
-
-
 class AuditEntryResponse(BaseModel):
     from_status: Status | None
     to_status: Status
@@ -57,7 +52,12 @@ class DocumentResponse(BaseModel):
     id: str
     filename: str
     content_type: str
+    size: int
     uploaded_at: datetime
+
+
+class DocumentUrlResponse(BaseModel):
+    url: str
 
 
 class ObligationResponse(BaseModel):
@@ -109,6 +109,7 @@ def to_detail_response(view: ObligationView) -> ObligationDetailResponse:
                 id=d.id,
                 filename=d.filename,
                 content_type=d.content_type,
+                size=d.size,
                 uploaded_at=d.uploaded_at,
             )
             for d in view.documents

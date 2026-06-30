@@ -61,10 +61,18 @@ def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -
 
     attached = client.post(
         f"/obligations/{oid}/document",
-        json={"filename": "filing.pdf", "content_type": "application/pdf"},
+        files={"file": ("filing.pdf", b"%PDF-1.7 data", "application/pdf")},
     )
     assert attached.status_code == 200
-    assert attached.json()["has_document"] is True
+    body = attached.json()
+    assert body["has_document"] is True
+    assert body["documents"][0]["filename"] == "filing.pdf"
+    assert body["documents"][0]["size"] == len(b"%PDF-1.7 data")
+
+    document_id = body["documents"][0]["id"]
+    url_res = client.get(f"/obligations/{oid}/documents/{document_id}/url")
+    assert url_res.status_code == 200
+    assert url_res.json()["url"].startswith("https://signed.example/")
 
     submitted = client.post(
         f"/obligations/{oid}/transition",

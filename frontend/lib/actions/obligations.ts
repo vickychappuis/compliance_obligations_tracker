@@ -132,11 +132,13 @@ export async function attachDocumentAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const filename = String(formData.get("filename") ?? "").trim();
-  if (!filename) return { error: "Please provide a file name." };
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: "Please choose a file to upload." };
+  }
 
   try {
-    await attachDocument(id, filename, "application/octet-stream");
+    await attachDocument(id, file);
   } catch (error) {
     return { error: message(error) };
   }

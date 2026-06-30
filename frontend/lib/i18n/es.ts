@@ -60,7 +60,8 @@ export const es: typeof en = {
     submitBlocked: "Se requiere un documento antes de poder enviarla.",
     attachDocument: "Adjuntar documento",
     attach: "Adjuntar",
-    filename: "Nombre del archivo",
+    file: "Archivo",
+    download: "Descargar",
   },
   form: {
     createTitle: "Nueva obligación",
