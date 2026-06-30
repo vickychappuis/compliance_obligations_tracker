@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import get_settings
+
+_BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Base(DeclarativeBase):
@@ -24,10 +27,14 @@ engine = make_engine(get_settings().database_url)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
-def create_all() -> None:
-    from app.data import models  # noqa: F401
+def run_migrations() -> None:
+    from alembic import command
+    from alembic.config import Config
 
-    Base.metadata.create_all(bind=engine)
+    config = Config(str(_BACKEND_ROOT / "alembic.ini"))
+    config.set_main_option("script_location", str(_BACKEND_ROOT / "alembic"))
+    config.set_main_option("sqlalchemy.url", get_settings().database_url)
+    command.upgrade(config, "head")
 
 
 def get_session() -> Iterator[Session]:

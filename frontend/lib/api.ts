@@ -104,13 +104,32 @@ export function transitionObligation(
   });
 }
 
-export function attachDocument(
+export async function attachDocument(
   id: string,
-  filename: string,
-  contentType: string,
+  file: File,
 ): Promise<ObligationDetail> {
-  return request<ObligationDetail>(`/obligations/${id}/document`, {
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await fetch(`${API_BASE_URL}/obligations/${id}/document`, {
     method: "POST",
-    body: JSON.stringify({ filename, content_type: contentType }),
+    cache: "no-store",
+    body: form,
   });
+
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!res.ok) {
+    const message =
+      (data as { error?: { message?: string } } | null)?.error?.message ??
+      res.statusText;
+    throw new ApiError(res.status, message);
+  }
+
+  return data as ObligationDetail;
+}
+
+export function getDocumentUrl(id: string, documentId: string): Promise<{ url: string }> {
+  return request<{ url: string }>(`/obligations/${id}/documents/${documentId}/url`);
 }

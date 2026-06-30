@@ -15,8 +15,8 @@ export function AttachDocumentForm({ id, dict }: { id: string; dict: Dictionary 
 
   return (
     <form action={formAction} className="flex items-end gap-2">
-      <Field label={dict.detail.filename} htmlFor="filename">
-        <Input id="filename" name="filename" placeholder="filing.pdf" required />
+      <Field label={dict.detail.file} htmlFor="file">
+        <Input id="file" name="file" type="file" required />
       </Field>
       <SubmitButton variant="secondary">{dict.detail.attach}</SubmitButton>
       {state.error && <p className="text-xs text-red-600">{state.error}</p>}

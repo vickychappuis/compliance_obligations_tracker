@@ -11,6 +11,8 @@ from sqlalchemy.pool import StaticPool
 from app.data import models  # noqa: F401
 from app.data.database import Base, get_session
 from app.main import app
+from app.routes.obligations import get_storage_gateway
+from tests.fakes import FakeStorage
 
 
 @pytest.fixture
@@ -31,6 +33,7 @@ def client() -> Iterator[TestClient]:
             db.close()
 
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_storage_gateway] = lambda: FakeStorage()
     yield TestClient(app)
     app.dependency_overrides.clear()
     engine.dispose()

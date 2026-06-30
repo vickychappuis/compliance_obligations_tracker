@@ -37,6 +37,28 @@ export DATABASE_URL="postgresql+psycopg://compliance:compliance@localhost:5432/c
 uvicorn app.main:app --reload
 ```
 
+### Document storage (Supabase)
+
+Uploaded documents are stored as real files in a private Supabase Storage
+bucket; downloads are served via short-lived signed URLs. Copy
+`backend/.env.example` to `backend/.env` and set:
+
+- `SUPABASE_URL` — project URL
+- `SUPABASE_SERVICE_KEY` — service-role key (server-side only; never commit or log)
+- `SUPABASE_BUCKET` — private bucket name (default `obligation-documents`)
+
+### Database migrations (Alembic)
+
+The schema is managed by Alembic. The app runs `alembic upgrade head`
+automatically on startup, so a fresh database is migrated to the latest schema
+with no manual step. After changing the SQLAlchemy models, generate a migration:
+
+```bash
+cd backend
+alembic revision --autogenerate -m "describe the change"
+alembic upgrade head   # apply locally (also applied on app startup)
+```
+
 ## Frontend — local development
 
 ```bash

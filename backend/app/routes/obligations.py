@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.orm import Session
 
+from app.config import Settings, get_settings
 from app.data.database import get_session
 from app.domain.obligation import ObligationType, Status
+from app.integrations.storage import DocumentStorage, get_storage
 from app.schemas.obligation import (
-    DocumentRequest,
+    DocumentUrlResponse,
     ObligationCreateRequest,
     ObligationDetailResponse,
     ObligationPatchRequest,
@@ -26,8 +28,17 @@ from app.services.obligation_service import (
 router = APIRouter(prefix="/obligations", tags=["obligations"])
 
 
-def get_service(session: Session = Depends(get_session)) -> ObligationService:
-    return ObligationService(session)
+def get_storage_gateway(
+    settings: Settings = Depends(get_settings),
+) -> DocumentStorage:
+    return get_storage(settings)
+
+
+def get_service(
+    session: Session = Depends(get_session),
+    storage: DocumentStorage = Depends(get_storage_gateway),
+) -> ObligationService:
+    return ObligationService(session, storage)
 
 
 @router.get("", response_model=list[ObligationResponse])
@@ -108,10 +119,28 @@ def transition_obligation(
 
 
 @router.post("/{obligation_id}/document", response_model=ObligationDetailResponse)
-def attach_document(
+async def attach_document(
     obligation_id: str,
-    payload: DocumentRequest,
+    file: UploadFile = File(...),
     service: ObligationService = Depends(get_service),
 ) -> ObligationDetailResponse:
-    view = service.attach_document(obligation_id, payload.filename, payload.content_type)
+    data = await file.read()
+    view = service.attach_document(
+        obligation_id,
+        file.filename or "document",
+        file.content_type or "application/octet-stream",
+        data,
+    )
     return to_detail_response(view)
+
+
+@router.get(
+    "/{obligation_id}/documents/{document_id}/url",
+    response_model=DocumentUrlResponse,
+)
+def get_document_url(
+    obligation_id: str,
+    document_id: str,
+    service: ObligationService = Depends(get_service),
+) -> DocumentUrlResponse:
+    return DocumentUrlResponse(url=service.document_download_url(obligation_id, document_id))
