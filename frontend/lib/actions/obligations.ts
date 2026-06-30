@@ -7,6 +7,7 @@ import {
   ApiError,
   attachDocument,
   createObligation,
+  deleteDocument,
   patchObligation,
   transitionObligation,
   type ObligationInput,
@@ -139,6 +140,22 @@ export async function attachDocumentAction(
 
   try {
     await attachDocument(id, file);
+  } catch (error) {
+    return { error: message(error) };
+  }
+
+  revalidatePath(`/obligations/${id}`);
+  return {};
+}
+
+export async function removeDocumentAction(
+  id: string,
+  documentId: string,
+  _prev: ActionState,
+  _formData: FormData,
+): Promise<ActionState> {
+  try {
+    await deleteDocument(id, documentId);
   } catch (error) {
     return { error: message(error) };
   }

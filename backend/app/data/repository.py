@@ -87,3 +87,7 @@ class ObligationRepository:
                 DocumentRow.obligation_id == obligation_id,
             )
         ).first()
+
+    def delete_document(self, document: DocumentRow) -> None:
+        self.session.delete(document)
+        self.session.flush()

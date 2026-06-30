@@ -61,7 +61,10 @@ export const es: typeof en = {
     attachDocument: "Adjuntar documento",
     attach: "Adjuntar",
     file: "Archivo",
+    fileHint: "PDF, Word o imagen de hasta 10 MB.",
     download: "Descargar",
+    remove: "Eliminar",
+    removeConfirm: "¿Eliminar este documento? Esta acción no se puede deshacer.",
   },
   transition: {
     to_in_progress: "Marcar en progreso",

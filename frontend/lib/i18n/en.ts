@@ -59,7 +59,10 @@ export const en = {
     attachDocument: "Attach document",
     attach: "Attach",
     file: "File",
+    fileHint: "PDF, Word, or image up to 10 MB.",
     download: "Download",
+    remove: "Remove",
+    removeConfirm: "Remove this document? This cannot be undone.",
   },
   transition: {
     to_in_progress: "Mark as in progress",

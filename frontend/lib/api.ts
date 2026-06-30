@@ -130,6 +130,15 @@ export async function attachDocument(
   return data as ObligationDetail;
 }
 
+export function deleteDocument(
+  id: string,
+  documentId: string,
+): Promise<ObligationDetail> {
+  return request<ObligationDetail>(`/obligations/${id}/documents/${documentId}`, {
+    method: "DELETE",
+  });
+}
+
 export function getDocumentUrl(id: string, documentId: string): Promise<{ url: string }> {
   return request<{ url: string }>(`/obligations/${id}/documents/${documentId}/url`);
 }

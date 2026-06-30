@@ -105,6 +105,29 @@ def test_document_download_url_missing_raises_not_found(session: Session) -> Non
         svc.document_download_url(view.row.id, "does-not-exist")
 
 
+def test_remove_document_deletes_row_and_storage_object(session: Session) -> None:
+    storage = FakeStorage()
+    svc = ObligationService(session, storage=storage)
+    view = svc.create(_new(requires_document=True))
+    attached = svc.attach_document(view.row.id, "filing.pdf", "application/pdf", b"abc")
+    document = attached.documents[0]
+    document_id = document.id
+    storage_path = document.storage_path
+    assert storage_path in storage.uploaded
+
+    after = svc.remove_document(view.row.id, document_id)
+    assert after.documents == []
+    assert after.has_document is False
+    assert storage_path not in storage.uploaded
+
+
+def test_remove_document_missing_raises_not_found(session: Session) -> None:
+    svc = ObligationService(session, storage=FakeStorage())
+    view = svc.create(_new())
+    with pytest.raises(NotFound):
+        svc.remove_document(view.row.id, "does-not-exist")
+
+
 def test_version_conflict_on_stale_expected_version(session: Session) -> None:
     svc = ObligationService(session)
     view = svc.create(_new())

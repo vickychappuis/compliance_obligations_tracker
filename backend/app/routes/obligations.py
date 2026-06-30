@@ -134,6 +134,19 @@ async def attach_document(
     return to_detail_response(view)
 
 
+@router.delete(
+    "/{obligation_id}/documents/{document_id}",
+    response_model=ObligationDetailResponse,
+)
+def remove_document(
+    obligation_id: str,
+    document_id: str,
+    service: ObligationService = Depends(get_service),
+) -> ObligationDetailResponse:
+    view = service.remove_document(obligation_id, document_id)
+    return to_detail_response(view)
+
+
 @router.get(
     "/{obligation_id}/documents/{document_id}/url",
     response_model=DocumentUrlResponse,

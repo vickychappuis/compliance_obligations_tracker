@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AttachDocumentForm } from "@/components/obligations/AttachDocumentForm";
 import { AuditHistory } from "@/components/obligations/AuditHistory";
+import { RemoveDocumentButton } from "@/components/obligations/RemoveDocumentButton";
 import { StatusBadge } from "@/components/obligations/StatusBadge";
 import { TransitionControls } from "@/components/obligations/TransitionControls";
 import { Badge, Card } from "@/components/ui";
@@ -101,6 +102,7 @@ export default async function ObligationDetailPage({
                       {dict.detail.download}
                     </a>
                   )}
+                  <RemoveDocumentButton id={id} documentId={doc.id} dict={dict} />
                 </li>
               );
             })}
