@@ -93,6 +93,14 @@ export const en = {
     no: "No",
     loading: "Loading…",
     error: "Something went wrong.",
+    errorTitle: "Something went wrong",
+    errorBody: "An unexpected error occurred while loading this page.",
+    retry: "Try again",
     language: "Language",
+  },
+  notFound: {
+    title: "Page not found",
+    description: "The page you’re looking for doesn’t exist or may have moved.",
+    back: "Back to dashboard",
   },
 };

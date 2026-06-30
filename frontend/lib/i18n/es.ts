@@ -95,6 +95,14 @@ export const es: typeof en = {
     no: "No",
     loading: "Cargando…",
     error: "Algo salió mal.",
+    errorTitle: "Algo salió mal",
+    errorBody: "Ocurrió un error inesperado al cargar esta página.",
+    retry: "Reintentar",
     language: "Idioma",
+  },
+  notFound: {
+    title: "Página no encontrada",
+    description: "La página que buscas no existe o pudo haberse movido.",
+    back: "Volver al panel",
   },
 };
