@@ -117,6 +117,7 @@ export default async function ObligationDetailPage({
         </h2>
         <TransitionControls
           id={id}
+          status={ob.status}
           version={ob.version}
           allowed={ob.allowed_transitions}
           requiresDocument={ob.requires_document}

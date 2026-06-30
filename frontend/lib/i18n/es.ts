@@ -63,6 +63,15 @@ export const es: typeof en = {
     file: "Archivo",
     download: "Descargar",
   },
+  transition: {
+    to_in_progress: "Marcar en progreso",
+    to_submitted: "Marcar como enviada",
+    to_done: "Marcar como completada",
+    back_to_pending: "Volver a pendiente",
+    back_to_in_progress: "Devolver para corrección",
+    reopen: "Reabrir",
+    confirm: "Esto retrocede la obligación. ¿Continuar?",
+  },
   form: {
     createTitle: "Nueva obligación",
     editTitle: "Editar obligación",

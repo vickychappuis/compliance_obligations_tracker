@@ -61,6 +61,15 @@ export const en = {
     file: "File",
     download: "Download",
   },
+  transition: {
+    to_in_progress: "Mark as in progress",
+    to_submitted: "Mark as submitted",
+    to_done: "Mark as done",
+    back_to_pending: "Move back to pending",
+    back_to_in_progress: "Send back for rework",
+    reopen: "Reopen",
+    confirm: "This moves the obligation backward. Continue?",
+  },
   form: {
     createTitle: "New obligation",
     editTitle: "Edit obligation",
