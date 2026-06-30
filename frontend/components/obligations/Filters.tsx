@@ -32,8 +32,11 @@ export function Filters({
     router.push(query ? `/?${query}` : "/");
   }
 
+  const formKey = `${current.status ?? ""}|${current.type ?? ""}|${current.owner ?? ""}|${current.overdue ?? ""}`;
+
   return (
     <form
+      key={formKey}
       onSubmit={onSubmit}
       className="grid grid-cols-1 items-end gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-5"
     >
