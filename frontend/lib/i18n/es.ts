@@ -41,6 +41,8 @@ export const es: typeof en = {
     dueDate: "Fecha límite",
     owner: "Responsable",
     empty: "Ninguna obligación coincide con estos filtros.",
+    emptyAll: "Aún no hay obligaciones.",
+    createFirst: "Crea tu primera obligación",
     overdueBadge: "Vencida",
   },
   detail: {

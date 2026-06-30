@@ -39,6 +39,8 @@ export const en = {
     dueDate: "Due date",
     owner: "Owner",
     empty: "No obligations match these filters.",
+    emptyAll: "No obligations yet.",
+    createFirst: "Create your first obligation",
     overdueBadge: "Overdue",
   },
   detail: {

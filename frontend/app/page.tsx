@@ -45,7 +45,14 @@ export default async function DashboardPage({
       <h1 className="text-2xl font-semibold">{dict.nav.dashboard}</h1>
       <KpiCards summary={summary} dict={dict} />
       <Filters dict={dict} current={filters} />
-      <ObligationsTable items={items} dict={dict} locale={locale} />
+      <ObligationsTable
+        items={items}
+        dict={dict}
+        locale={locale}
+        filtered={Boolean(
+          filters.status || filters.type || filters.owner || filters.overdue,
+        )}
+      />
     </div>
   );
 }
