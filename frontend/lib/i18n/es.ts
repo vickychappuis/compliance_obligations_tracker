@@ -87,6 +87,7 @@ export const es: typeof en = {
     owner: "Responsable",
     requiresDocument: "Requiere documento",
     companyTaxId: "ID fiscal de la empresa",
+    companyTaxIdHint: "Se guarda de forma segura y se muestra enmascarado al guardar.",
     create: "Crear",
     save: "Guardar cambios",
     cancel: "Cancelar",

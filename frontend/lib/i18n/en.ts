@@ -85,6 +85,7 @@ export const en = {
     owner: "Owner",
     requiresDocument: "Requires document",
     companyTaxId: "Company tax ID",
+    companyTaxIdHint: "Stored securely and shown masked after saving.",
     create: "Create",
     save: "Save changes",
     cancel: "Cancel",

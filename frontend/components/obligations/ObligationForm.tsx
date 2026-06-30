@@ -99,9 +99,21 @@ export function ObligationForm({
       </label>
 
       {includeTaxId && (
-        <Field label={dict.form.companyTaxId} htmlFor="company_tax_id">
-          <Input id="company_tax_id" name="company_tax_id" required />
-        </Field>
+        <div className="space-y-1">
+          <Field label={dict.form.companyTaxId} htmlFor="company_tax_id">
+            <Input
+              id="company_tax_id"
+              name="company_tax_id"
+              inputMode="numeric"
+              placeholder="123456789"
+              aria-describedby="company_tax_id_hint"
+              required
+            />
+          </Field>
+          <p id="company_tax_id_hint" className="text-xs text-slate-500">
+            {dict.form.companyTaxIdHint}
+          </p>
+        </div>
       )}
 
       <div className="flex gap-2">
