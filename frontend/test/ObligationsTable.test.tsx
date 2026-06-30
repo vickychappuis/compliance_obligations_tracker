@@ -4,6 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import { ObligationsTable } from "@/components/obligations/ObligationsTable";
 import { dict, makeObligation } from "@/test/fixtures";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 vi.mock("next/link", () => ({
   default: ({
     href,

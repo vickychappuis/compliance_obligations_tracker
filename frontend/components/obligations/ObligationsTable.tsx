@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui";
 import { StatusBadge } from "@/components/obligations/StatusBadge";
+import { cn } from "@/lib/cn";
 import { formatDate } from "@/lib/format";
 import type { Dictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/config";
@@ -16,6 +20,8 @@ export function ObligationsTable({
   dict: Dictionary;
   locale: Locale;
 }) {
+  const router = useRouter();
+
   if (items.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-slate-500">
@@ -40,11 +46,16 @@ export function ObligationsTable({
           {items.map((item) => (
             <tr
               key={item.id}
-              className={item.overdue ? "bg-red-50" : "hover:bg-slate-50"}
+              onClick={() => router.push(`/obligations/${item.id}`)}
+              className={cn(
+                "cursor-pointer",
+                item.overdue ? "bg-red-50" : "hover:bg-slate-50",
+              )}
             >
               <td className="px-4 py-3">
                 <Link
                   href={`/obligations/${item.id}`}
+                  onClick={(event) => event.stopPropagation()}
                   className="font-medium text-slate-900 hover:underline"
                 >
                   {item.title}
