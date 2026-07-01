@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 import { Field, Input, Select, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -39,6 +39,16 @@ export function ObligationForm({
   taxIdPlaceholder?: string;
 }) {
   const [state, formAction] = useActionState(action, {});
+  const [pastDue, setPastDue] = useState(false);
+
+  function checkDueDate(value: string) {
+    const today = new Date().toISOString().slice(0, 10);
+    setPastDue(value !== "" && value < today);
+  }
+
+  useEffect(() => {
+    checkDueDate(defaultValues.due_date ?? "");
+  }, [defaultValues.due_date]);
 
   return (
     <form action={formAction} className="max-w-xl space-y-4">
@@ -78,15 +88,24 @@ export function ObligationForm({
         </Select>
       </Field>
 
-      <Field label={dict.form.dueDate} htmlFor="due_date">
-        <Input
-          id="due_date"
-          name="due_date"
-          type="date"
-          defaultValue={defaultValues.due_date}
-          required
-        />
-      </Field>
+      <div className="space-y-1">
+        <Field label={dict.form.dueDate} htmlFor="due_date">
+          <Input
+            id="due_date"
+            name="due_date"
+            type="date"
+            defaultValue={defaultValues.due_date}
+            onChange={(event) => checkDueDate(event.target.value)}
+            aria-describedby="due_date_warning"
+            required
+          />
+        </Field>
+        {pastDue && (
+          <p id="due_date_warning" className="text-xs text-amber-600">
+            {dict.form.pastDueWarning}
+          </p>
+        )}
+      </div>
 
       <Field label={dict.form.owner} htmlFor="owner">
         <Input id="owner" name="owner" defaultValue={defaultValues.owner} required />

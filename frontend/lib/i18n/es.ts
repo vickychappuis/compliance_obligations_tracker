@@ -89,6 +89,7 @@ export const es: typeof en = {
     companyTaxId: "ID fiscal de la empresa",
     companyTaxIdHint: "Se guarda de forma segura y se muestra enmascarado al guardar.",
     companyTaxIdEditHint: "Déjalo en blanco para mantener el ID fiscal actual.",
+    pastDueWarning: "Esta fecha límite ya pasó.",
     create: "Crear",
     save: "Guardar cambios",
     cancel: "Cancelar",

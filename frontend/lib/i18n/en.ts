@@ -87,6 +87,7 @@ export const en = {
     companyTaxId: "Company tax ID",
     companyTaxIdHint: "Stored securely and shown masked after saving.",
     companyTaxIdEditHint: "Leave blank to keep the current tax ID.",
+    pastDueWarning: "This due date is in the past.",
     create: "Create",
     save: "Save changes",
     cancel: "Cancel",
