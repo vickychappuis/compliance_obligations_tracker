@@ -1,17 +1,20 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "react";
 
-import { SubmitButton } from "@/components/ui/submit-button";
+import { cn } from "@/lib/cn";
 import { attachDocumentAction } from "@/lib/actions/obligations";
 import type { Dictionary } from "@/lib/i18n";
 
+const MAX_BYTES = 10 * 1024 * 1024;
+
 export function AttachDocumentForm({ id, dict }: { id: string; dict: Dictionary }) {
-  const [state, formAction] = useActionState(
+  const [state, formAction, isPending] = useActionState(
     attachDocumentAction.bind(null, id),
     {},
   );
   const [fileName, setFileName] = useState<string | null>(null);
+  const [sizeError, setSizeError] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -21,15 +24,40 @@ export function AttachDocumentForm({ id, dict }: { id: string; dict: Dictionary 
     }
   }, [state]);
 
+  function onChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setFileName(null);
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      setSizeError(true);
+      setFileName(null);
+      event.target.value = "";
+      return;
+    }
+    setSizeError(false);
+    setFileName(file.name);
+    formRef.current?.requestSubmit();
+  }
+
+  const error = sizeError ? dict.detail.fileTooLarge : state.error;
+
   return (
-    <form ref={formRef} action={formAction} className="space-y-3">
+    <form ref={formRef} action={formAction} className="space-y-2">
       <label
         htmlFor="file"
-        className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed border-slate-300 px-4 py-6 text-center hover:border-slate-400 hover:bg-slate-50"
+        aria-busy={isPending}
+        className={cn(
+          "flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed border-slate-300 px-4 py-6 text-center hover:border-slate-400 hover:bg-slate-50",
+          isPending && "pointer-events-none opacity-60",
+        )}
       >
         <UploadIcon />
         <span className="text-sm font-medium text-slate-700">
-          {fileName ?? dict.detail.uploadPrompt}
+          {isPending
+            ? `${dict.detail.uploading} ${fileName ?? ""}`.trim()
+            : (fileName ?? dict.detail.uploadPrompt)}
         </span>
         <span className="text-xs text-slate-500">{dict.detail.fileHint}</span>
         <input
@@ -38,18 +66,12 @@ export function AttachDocumentForm({ id, dict }: { id: string; dict: Dictionary 
           type="file"
           accept=".pdf,.doc,.docx,image/*"
           required
+          disabled={isPending}
           className="sr-only"
-          onChange={(event) =>
-            setFileName(event.target.files?.[0]?.name ?? null)
-          }
+          onChange={onChange}
         />
       </label>
-      <div className="flex items-center gap-3">
-        <SubmitButton variant="secondary" disabled={!fileName}>
-          {dict.detail.attach}
-        </SubmitButton>
-        {state.error && <span className="text-xs text-red-600">{state.error}</span>}
-      </div>
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </form>
   );
 }

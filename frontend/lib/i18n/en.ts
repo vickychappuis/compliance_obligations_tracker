@@ -63,6 +63,8 @@ export const en = {
     attach: "Attach",
     file: "File",
     uploadPrompt: "Click to upload a file",
+    uploading: "Uploading…",
+    fileTooLarge: "That file is over the 10 MB limit.",
     fileHint: "PDF, Word, or image up to 10 MB.",
     download: "Download",
     remove: "Remove",

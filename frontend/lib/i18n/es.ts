@@ -65,6 +65,8 @@ export const es: typeof en = {
     attach: "Adjuntar",
     file: "Archivo",
     uploadPrompt: "Haz clic para subir un archivo",
+    uploading: "Subiendo…",
+    fileTooLarge: "Ese archivo supera el límite de 10 MB.",
     fileHint: "PDF, Word o imagen de hasta 10 MB.",
     download: "Descargar",
     remove: "Eliminar",
