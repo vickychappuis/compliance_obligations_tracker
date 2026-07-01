@@ -44,7 +44,11 @@ export default async function DashboardPage({
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{dict.nav.dashboard}</h1>
       <KpiCards summary={summary} dict={dict} />
-      <Filters dict={dict} current={filters} />
+      <Filters
+        dict={dict}
+        current={filters}
+        owners={[...new Set(items.map((item) => item.owner))].sort()}
+      />
       <ObligationsTable
         items={items}
         dict={dict}

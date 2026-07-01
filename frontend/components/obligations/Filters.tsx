@@ -11,9 +11,11 @@ import type { ObligationFilters } from "@/lib/types";
 export function Filters({
   dict,
   current,
+  owners = [],
 }: {
   dict: Dictionary;
   current: ObligationFilters;
+  owners?: string[];
 }) {
   const router = useRouter();
 
@@ -61,7 +63,18 @@ export function Filters({
         </Select>
       </Field>
       <Field label={dict.filters.owner} htmlFor="filter-owner">
-        <Input id="filter-owner" name="owner" defaultValue={current.owner ?? ""} />
+        <Input
+          id="filter-owner"
+          name="owner"
+          defaultValue={current.owner ?? ""}
+          list="owner-options"
+          autoComplete="off"
+        />
+        <datalist id="owner-options">
+          {owners.map((owner) => (
+            <option key={owner} value={owner} />
+          ))}
+        </datalist>
       </Field>
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input
