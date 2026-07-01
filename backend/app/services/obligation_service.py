@@ -140,6 +140,17 @@ class ObligationService:
         self.session.refresh(row)
         return self._view(row)
 
+    def remove_document(self, obligation_id: str, document_id: str) -> ObligationView:
+        row = self._require(obligation_id)
+        document = self.repo.get_document(obligation_id, document_id)
+        if document is None:
+            raise NotFound(document_id)
+        self.storage.remove(document.storage_path)
+        self.repo.delete_document(document)
+        self.session.commit()
+        self.session.refresh(row)
+        return self._view(row)
+
     def document_download_url(self, obligation_id: str, document_id: str) -> str:
         self._require(obligation_id)
         document = self.repo.get_document(obligation_id, document_id)

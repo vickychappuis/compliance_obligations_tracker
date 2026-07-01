@@ -4,6 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import { ObligationsTable } from "@/components/obligations/ObligationsTable";
 import { dict, makeObligation } from "@/test/fixtures";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 vi.mock("next/link", () => ({
   default: ({
     href,
@@ -20,9 +24,16 @@ vi.mock("next/link", () => ({
 }));
 
 describe("ObligationsTable", () => {
-  it("shows the empty state when there are no items", () => {
+  it("shows the empty-system state with a create CTA when unfiltered", () => {
     render(<ObligationsTable items={[]} dict={dict} locale="en" />);
+    expect(screen.getByText(dict.list.emptyAll)).toBeInTheDocument();
+    expect(screen.getByText(dict.list.createFirst)).toBeInTheDocument();
+  });
+
+  it("shows the no-match state without a CTA when filtered", () => {
+    render(<ObligationsTable items={[]} dict={dict} locale="en" filtered />);
     expect(screen.getByText(dict.list.empty)).toBeInTheDocument();
+    expect(screen.queryByText(dict.list.createFirst)).not.toBeInTheDocument();
   });
 
   it("renders rows and highlights overdue items", () => {

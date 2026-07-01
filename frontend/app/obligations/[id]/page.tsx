@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AttachDocumentForm } from "@/components/obligations/AttachDocumentForm";
 import { AuditHistory } from "@/components/obligations/AuditHistory";
+import { RemoveDocumentButton } from "@/components/obligations/RemoveDocumentButton";
 import { StatusBadge } from "@/components/obligations/StatusBadge";
 import { TransitionControls } from "@/components/obligations/TransitionControls";
 import { Badge, Card } from "@/components/ui";
@@ -43,17 +44,9 @@ export default async function ObligationDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <Link href="/" className="text-sm text-slate-500 hover:text-slate-900">
-          ← {dict.detail.back}
-        </Link>
-        <Link
-          href={`/obligations/${id}/edit`}
-          className="text-sm font-medium text-slate-700 hover:underline"
-        >
-          {dict.detail.edit}
-        </Link>
-      </div>
+      <Link href="/" className="text-sm text-slate-500 hover:text-slate-900">
+        ← {dict.detail.back}
+      </Link>
 
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-3">
@@ -65,9 +58,17 @@ export default async function ObligationDetailPage({
       </div>
 
       <Card>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
-          {dict.detail.fields}
-        </h2>
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            {dict.detail.fields}
+          </h2>
+          <Link
+            href={`/obligations/${id}/edit`}
+            className="inline-flex items-center justify-center rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-900 hover:bg-slate-100"
+          >
+            {dict.detail.edit}
+          </Link>
+        </div>
         <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
           <Row label={dict.detail.type} value={dict.type[ob.type]} />
           <Row label={dict.detail.owner} value={ob.owner} />
@@ -101,6 +102,7 @@ export default async function ObligationDetailPage({
                       {dict.detail.download}
                     </a>
                   )}
+                  <RemoveDocumentButton id={id} documentId={doc.id} dict={dict} />
                 </li>
               );
             })}
@@ -117,6 +119,7 @@ export default async function ObligationDetailPage({
         </h2>
         <TransitionControls
           id={id}
+          status={ob.status}
           version={ob.version}
           allowed={ob.allowed_transitions}
           requiresDocument={ob.requires_document}

@@ -7,20 +7,45 @@ import { transitionAction } from "@/lib/actions/obligations";
 import type { Dictionary } from "@/lib/i18n";
 import type { Status } from "@/lib/types";
 
+const STATUS_ORDER: Record<Status, number> = {
+  pending: 0,
+  in_progress: 1,
+  submitted: 2,
+  done: 3,
+};
+
+function transitionLabel(
+  from: Status,
+  to: Status,
+  dict: Dictionary,
+): string {
+  const t = dict.transition;
+  if (to === "submitted") return t.to_submitted;
+  if (to === "done") return t.to_done;
+  if (to === "pending") return t.back_to_pending;
+  if (from === "pending") return t.to_in_progress;
+  if (from === "done") return t.reopen;
+  return t.back_to_in_progress;
+}
+
 function TransitionButton({
   id,
   target,
   version,
   label,
   disabled,
+  primary,
   blockedHint,
+  confirmMessage,
 }: {
   id: string;
   target: Status;
   version: number;
   label: string;
   disabled: boolean;
+  primary: boolean;
   blockedHint?: string;
+  confirmMessage?: string;
 }) {
   const [state, formAction] = useActionState(transitionAction.bind(null, id), {});
 
@@ -31,7 +56,14 @@ function TransitionButton({
         <input type="hidden" name="expected_version" value={version} />
         <SubmitButton
           disabled={disabled}
-          variant={target === "done" ? "primary" : "secondary"}
+          variant={primary ? "primary" : "secondary"}
+          onClick={
+            confirmMessage
+              ? (event) => {
+                  if (!window.confirm(confirmMessage)) event.preventDefault();
+                }
+              : undefined
+          }
         >
           {label}
         </SubmitButton>
@@ -46,6 +78,7 @@ function TransitionButton({
 
 export function TransitionControls({
   id,
+  status,
   version,
   allowed,
   requiresDocument,
@@ -53,6 +86,7 @@ export function TransitionControls({
   dict,
 }: {
   id: string;
+  status: Status;
   version: number;
   allowed: Status[];
   requiresDocument: boolean;
@@ -67,15 +101,18 @@ export function TransitionControls({
     <div className="flex flex-wrap items-start gap-3">
       {allowed.map((target) => {
         const blocked = target === "submitted" && requiresDocument && !hasDocument;
+        const isForward = STATUS_ORDER[target] > STATUS_ORDER[status];
         return (
           <TransitionButton
             key={target}
             id={id}
             target={target}
             version={version}
-            label={dict.status[target]}
+            label={transitionLabel(status, target, dict)}
             disabled={blocked}
+            primary={isForward}
             blockedHint={blocked ? dict.detail.submitBlocked : undefined}
+            confirmMessage={!isForward ? dict.transition.confirm : undefined}
           />
         );
       })}

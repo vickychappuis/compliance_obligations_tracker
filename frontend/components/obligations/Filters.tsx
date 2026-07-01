@@ -11,9 +11,11 @@ import type { ObligationFilters } from "@/lib/types";
 export function Filters({
   dict,
   current,
+  owners = [],
 }: {
   dict: Dictionary;
   current: ObligationFilters;
+  owners?: string[];
 }) {
   const router = useRouter();
 
@@ -32,8 +34,11 @@ export function Filters({
     router.push(query ? `/?${query}` : "/");
   }
 
+  const formKey = `${current.status ?? ""}|${current.type ?? ""}|${current.owner ?? ""}|${current.overdue ?? ""}`;
+
   return (
     <form
+      key={formKey}
       onSubmit={onSubmit}
       className="grid grid-cols-1 items-end gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-5"
     >
@@ -58,7 +63,18 @@ export function Filters({
         </Select>
       </Field>
       <Field label={dict.filters.owner} htmlFor="filter-owner">
-        <Input id="filter-owner" name="owner" defaultValue={current.owner ?? ""} />
+        <Input
+          id="filter-owner"
+          name="owner"
+          defaultValue={current.owner ?? ""}
+          list="owner-options"
+          autoComplete="off"
+        />
+        <datalist id="owner-options">
+          {owners.map((owner) => (
+            <option key={owner} value={owner} />
+          ))}
+        </datalist>
       </Field>
       <label className="flex items-center gap-2 text-sm text-slate-700">
         <input

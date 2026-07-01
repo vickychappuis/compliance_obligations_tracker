@@ -28,7 +28,9 @@ export default async function EditObligationPage({
         dict={dict}
         action={updateObligationAction.bind(null, id)}
         submitLabel={dict.form.save}
-        includeTaxId={false}
+        includeTaxId
+        taxIdOptional
+        taxIdPlaceholder={obligation.company_tax_id}
         cancelHref={`/obligations/${id}`}
         defaultValues={{
           title: obligation.title,

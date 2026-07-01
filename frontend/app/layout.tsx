@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { NavLinks } from "@/components/NavLinks";
 import { getDictionary, getLocale } from "@/lib/i18n";
 import "./globals.css";
 
@@ -41,15 +42,7 @@ export default async function RootLayout({
               {dict.appTitle}
             </Link>
             <nav className="flex items-center gap-4 text-sm">
-              <Link href="/" className="text-slate-600 hover:text-slate-900">
-                {dict.nav.dashboard}
-              </Link>
-              <Link
-                href="/obligations/new"
-                className="text-slate-600 hover:text-slate-900"
-              >
-                {dict.nav.new}
-              </Link>
+              <NavLinks dashboard={dict.nav.dashboard} create={dict.nav.new} />
               <LocaleSwitcher current={locale} />
             </nav>
           </div>

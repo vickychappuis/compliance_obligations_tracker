@@ -7,6 +7,7 @@ import {
   ApiError,
   attachDocument,
   createObligation,
+  deleteDocument,
   patchObligation,
   transitionObligation,
   type ObligationInput,
@@ -65,11 +66,12 @@ export async function createObligationAction(
 
 function parseUpdate(
   formData: FormData,
-): Omit<ObligationInput, "company_tax_id"> | { error: string } {
+): Partial<ObligationInput> | { error: string } {
   const title = String(formData.get("title") ?? "").trim();
   const owner = String(formData.get("owner") ?? "").trim();
   const due_date = String(formData.get("due_date") ?? "").trim();
   const type = String(formData.get("type") ?? "").trim() as ObligationType;
+  const company_tax_id = String(formData.get("company_tax_id") ?? "").trim();
 
   if (!title || !owner || !due_date || !type) {
     return { error: "Please complete all required fields." };
@@ -82,6 +84,7 @@ function parseUpdate(
     due_date,
     owner,
     requires_document: formData.get("requires_document") === "on",
+    ...(company_tax_id ? { company_tax_id } : {}),
   };
 }
 
@@ -139,6 +142,22 @@ export async function attachDocumentAction(
 
   try {
     await attachDocument(id, file);
+  } catch (error) {
+    return { error: message(error) };
+  }
+
+  revalidatePath(`/obligations/${id}`);
+  return {};
+}
+
+export async function removeDocumentAction(
+  id: string,
+  documentId: string,
+  _prev: ActionState,
+  _formData: FormData,
+): Promise<ActionState> {
+  try {
+    await deleteDocument(id, documentId);
   } catch (error) {
     return { error: message(error) };
   }

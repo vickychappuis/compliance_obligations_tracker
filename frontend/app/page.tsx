@@ -35,31 +35,28 @@ export default async function DashboardPage({
   ]);
   const filters = parseFilters(params);
 
-  let content;
-  try {
-    const [summary, items] = await Promise.all([
-      getSummary(),
-      listObligations(filters),
-    ]);
-    content = (
-      <>
-        <KpiCards summary={summary} dict={dict} />
-        <Filters dict={dict} current={filters} />
-        <ObligationsTable items={items} dict={dict} locale={locale} />
-      </>
-    );
-  } catch {
-    content = (
-      <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-        {dict.common.error}
-      </p>
-    );
-  }
+  const [summary, items] = await Promise.all([
+    getSummary(),
+    listObligations(filters),
+  ]);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">{dict.nav.dashboard}</h1>
-      {content}
+      <KpiCards summary={summary} dict={dict} />
+      <Filters
+        dict={dict}
+        current={filters}
+        owners={[...new Set(items.map((item) => item.owner))].sort()}
+      />
+      <ObligationsTable
+        items={items}
+        dict={dict}
+        locale={locale}
+        filtered={Boolean(
+          filters.status || filters.type || filters.owner || filters.overdue,
+        )}
+      />
     </div>
   );
 }

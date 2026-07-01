@@ -15,8 +15,19 @@ export function SubmitButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" variant={variant} disabled={disabled || pending} {...props}>
-      {pending ? "…" : children}
+    <Button
+      type="submit"
+      variant={variant}
+      disabled={disabled || pending}
+      aria-busy={pending}
+      {...props}
+    >
+      {children}
+      {pending && (
+        <span className="ml-2 animate-pulse" aria-hidden>
+          …
+        </span>
+      )}
     </Button>
   );
 }

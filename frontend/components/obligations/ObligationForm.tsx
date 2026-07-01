@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 import { Field, Input, Select, Textarea } from "@/components/ui";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -26,6 +26,8 @@ export function ObligationForm({
   includeTaxId,
   cancelHref,
   defaultValues = {},
+  taxIdOptional = false,
+  taxIdPlaceholder = "123456789",
 }: {
   dict: Dictionary;
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
@@ -33,8 +35,20 @@ export function ObligationForm({
   includeTaxId: boolean;
   cancelHref: string;
   defaultValues?: DefaultValues;
+  taxIdOptional?: boolean;
+  taxIdPlaceholder?: string;
 }) {
   const [state, formAction] = useActionState(action, {});
+  const [pastDue, setPastDue] = useState(false);
+
+  function checkDueDate(value: string) {
+    const today = new Date().toISOString().slice(0, 10);
+    setPastDue(value !== "" && value < today);
+  }
+
+  useEffect(() => {
+    checkDueDate(defaultValues.due_date ?? "");
+  }, [defaultValues.due_date]);
 
   return (
     <form action={formAction} className="max-w-xl space-y-4">
@@ -74,15 +88,24 @@ export function ObligationForm({
         </Select>
       </Field>
 
-      <Field label={dict.form.dueDate} htmlFor="due_date">
-        <Input
-          id="due_date"
-          name="due_date"
-          type="date"
-          defaultValue={defaultValues.due_date}
-          required
-        />
-      </Field>
+      <div className="space-y-1">
+        <Field label={dict.form.dueDate} htmlFor="due_date">
+          <Input
+            id="due_date"
+            name="due_date"
+            type="date"
+            defaultValue={defaultValues.due_date}
+            onChange={(event) => checkDueDate(event.target.value)}
+            aria-describedby="due_date_warning"
+            required
+          />
+        </Field>
+        {pastDue && (
+          <p id="due_date_warning" className="text-xs text-amber-600">
+            {dict.form.pastDueWarning}
+          </p>
+        )}
+      </div>
 
       <Field label={dict.form.owner} htmlFor="owner">
         <Input id="owner" name="owner" defaultValue={defaultValues.owner} required />
@@ -99,9 +122,23 @@ export function ObligationForm({
       </label>
 
       {includeTaxId && (
-        <Field label={dict.form.companyTaxId} htmlFor="company_tax_id">
-          <Input id="company_tax_id" name="company_tax_id" required />
-        </Field>
+        <div className="space-y-1">
+          <Field label={dict.form.companyTaxId} htmlFor="company_tax_id">
+            <Input
+              id="company_tax_id"
+              name="company_tax_id"
+              inputMode="numeric"
+              placeholder={taxIdPlaceholder}
+              aria-describedby="company_tax_id_hint"
+              required={!taxIdOptional}
+            />
+          </Field>
+          <p id="company_tax_id_hint" className="text-xs text-slate-500">
+            {taxIdOptional
+              ? dict.form.companyTaxIdEditHint
+              : dict.form.companyTaxIdHint}
+          </p>
+        </div>
       )}
 
       <div className="flex gap-2">

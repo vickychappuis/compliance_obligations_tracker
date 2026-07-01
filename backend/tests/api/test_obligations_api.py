@@ -89,6 +89,28 @@ def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -
     assert stale.json()["error"]["type"] == "VersionConflict"
 
 
+def test_attach_then_remove_document(client: TestClient) -> None:
+    oid = client.post("/obligations", json=_payload(requires_document=True)).json()["id"]
+    attached = client.post(
+        f"/obligations/{oid}/document",
+        files={"file": ("filing.pdf", b"%PDF-1.7 data", "application/pdf")},
+    ).json()
+    document_id = attached["documents"][0]["id"]
+
+    removed = client.delete(f"/obligations/{oid}/documents/{document_id}")
+    assert removed.status_code == 200
+    body = removed.json()
+    assert body["documents"] == []
+    assert body["has_document"] is False
+
+
+def test_remove_missing_document_returns_404(client: TestClient) -> None:
+    oid = client.post("/obligations", json=_payload()).json()["id"]
+    res = client.delete(f"/obligations/{oid}/documents/nope")
+    assert res.status_code == 404
+    assert res.json()["error"]["type"] == "NotFound"
+
+
 def test_get_missing_returns_404(client: TestClient) -> None:
     res = client.get("/obligations/nope")
     assert res.status_code == 404
