@@ -41,8 +41,8 @@ export function ObligationsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200">
-      <table className="w-full border-collapse text-left text-sm">
+    <div className="overflow-x-auto rounded-lg border border-slate-200">
+      <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
         <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3">{dict.list.title}</th>
