@@ -73,6 +73,7 @@ class ObligationResponse(BaseModel):
     company_tax_id: str
     version: int
     overdue: bool
+    can_submit: bool
     allowed_transitions: list[Status]
     created_at: datetime
 
@@ -141,6 +142,7 @@ def _base_fields(view: ObligationView) -> dict:
         "company_tax_id": mask_tax_id(row.company_tax_id),
         "version": row.version,
         "overdue": view.overdue,
+        "can_submit": view.can_submit,
         "allowed_transitions": view.allowed_transitions,
         "created_at": row.created_at,
     }

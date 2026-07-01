@@ -9,6 +9,7 @@ from app.domain.obligation import Status
 from app.domain.rules import (
     assert_document_allowed,
     assert_document_gate,
+    is_document_gate_satisfied,
     is_overdue,
 )
 from tests.domain.conftest import make_obligation
@@ -110,3 +111,17 @@ class TestDocumentAllowed:
                 max_bytes=MAX_BYTES,
                 allowed_content_types=ALLOWED,
             )
+
+
+class TestIsDocumentGateSatisfied:
+    def test_satisfied_when_not_required(self) -> None:
+        ob = make_obligation(requires_document=False, has_document=False)
+        assert is_document_gate_satisfied(ob) is True
+
+    def test_not_satisfied_when_required_and_missing(self) -> None:
+        ob = make_obligation(requires_document=True, has_document=False)
+        assert is_document_gate_satisfied(ob) is False
+
+    def test_satisfied_when_required_and_present(self) -> None:
+        ob = make_obligation(requires_document=True, has_document=True)
+        assert is_document_gate_satisfied(ob) is True

@@ -9,15 +9,14 @@ vi.mock("@/lib/actions/obligations", () => ({
 }));
 
 describe("TransitionControls (document gate)", () => {
-  it("disables submit and shows the hint when a required document is missing", () => {
+  it("disables submit and shows the hint when the backend gate is not satisfied", () => {
     render(
       <TransitionControls
         id="ob-1"
         status="in_progress"
         version={2}
         allowed={["submitted", "pending"]}
-        requiresDocument
-        hasDocument={false}
+        canSubmit={false}
         dict={dict}
       />,
     );
@@ -33,15 +32,14 @@ describe("TransitionControls (document gate)", () => {
     ).toBeEnabled();
   });
 
-  it("enables submit once a document is attached", () => {
+  it("enables submit when the backend reports the gate satisfied", () => {
     render(
       <TransitionControls
         id="ob-1"
         status="in_progress"
         version={2}
         allowed={["submitted"]}
-        requiresDocument
-        hasDocument
+        canSubmit
         dict={dict}
       />,
     );

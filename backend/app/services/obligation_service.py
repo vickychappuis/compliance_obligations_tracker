@@ -11,7 +11,12 @@ from app.data.models import AuditEntryRow, DocumentRow, ObligationRow
 from app.data.repository import ObligationRepository
 from app.domain.errors import NotFound, VersionConflict
 from app.domain.obligation import Obligation, ObligationType, Status
-from app.domain.rules import assert_document_allowed, assert_document_gate, is_overdue
+from app.domain.rules import (
+    assert_document_allowed,
+    assert_document_gate,
+    is_document_gate_satisfied,
+    is_overdue,
+)
 from app.domain.state_machine import allowed_transitions, validate_transition
 from app.integrations.storage import DocumentStorage, get_storage
 
@@ -43,6 +48,7 @@ class ObligationView:
     row: ObligationRow
     has_document: bool
     overdue: bool
+    can_submit: bool
     allowed_transitions: list[Status]
     audit: list[AuditEntryRow]
     documents: list[DocumentRow]
@@ -244,6 +250,7 @@ class ObligationService:
             row=row,
             has_document=has_document,
             overdue=is_overdue(domain, today),
+            can_submit=is_document_gate_satisfied(domain),
             allowed_transitions=sorted(
                 allowed_transitions(Status(row.status)), key=lambda s: s.value
             ),

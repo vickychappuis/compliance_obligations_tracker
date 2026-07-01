@@ -33,6 +33,7 @@ export interface Obligation {
   company_tax_id: string;
   version: number;
   overdue: boolean;
+  can_submit: boolean;
   allowed_transitions: Status[];
   created_at: string;
 }

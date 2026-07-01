@@ -23,17 +23,22 @@ def is_overdue(obligation: Obligation, today: date) -> bool:
     )
 
 
+def is_document_gate_satisfied(obligation: Obligation) -> bool:
+    """Whether the document gate allows a move to `submitted`: either no
+    document is required, or a required document is attached.
+
+    Derived on read so callers can render the gate without re-deriving the rule.
+    """
+    return not obligation.requires_document or obligation.has_document
+
+
 def assert_document_gate(obligation: Obligation, target: Status) -> None:
     """Block a move to `submitted` when a required document is missing.
 
     The gate only applies to the `submitted` target; other transitions are
     unaffected by document state.
     """
-    if (
-        target is Status.SUBMITTED
-        and obligation.requires_document
-        and not obligation.has_document
-    ):
+    if target is Status.SUBMITTED and not is_document_gate_satisfied(obligation):
         raise DocumentRequired()
 
 

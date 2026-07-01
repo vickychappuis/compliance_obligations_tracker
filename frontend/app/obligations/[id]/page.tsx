@@ -122,8 +122,7 @@ export default async function ObligationDetailPage({
           status={ob.status}
           version={ob.version}
           allowed={ob.allowed_transitions}
-          requiresDocument={ob.requires_document}
-          hasDocument={ob.has_document}
+          canSubmit={ob.can_submit}
           dict={dict}
         />
       </Card>

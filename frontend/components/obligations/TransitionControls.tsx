@@ -81,16 +81,14 @@ export function TransitionControls({
   status,
   version,
   allowed,
-  requiresDocument,
-  hasDocument,
+  canSubmit,
   dict,
 }: {
   id: string;
   status: Status;
   version: number;
   allowed: Status[];
-  requiresDocument: boolean;
-  hasDocument: boolean;
+  canSubmit: boolean;
   dict: Dictionary;
 }) {
   if (allowed.length === 0) {
@@ -100,7 +98,7 @@ export function TransitionControls({
   return (
     <div className="flex flex-wrap items-start gap-3">
       {allowed.map((target) => {
-        const blocked = target === "submitted" && requiresDocument && !hasDocument;
+        const blocked = target === "submitted" && !canSubmit;
         const isForward = STATUS_ORDER[target] > STATUS_ORDER[status];
         return (
           <TransitionButton

@@ -37,6 +37,7 @@ def test_create_masks_tax_id_and_starts_pending(client: TestClient) -> None:
 def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -> None:
     created = client.post("/obligations", json=_payload(requires_document=True)).json()
     oid = created["id"]
+    assert created["can_submit"] is False
 
     bad = client.post(
         f"/obligations/{oid}/transition",
@@ -66,6 +67,7 @@ def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -
     assert attached.status_code == 200
     body = attached.json()
     assert body["has_document"] is True
+    assert body["can_submit"] is True
     assert body["documents"][0]["filename"] == "filing.pdf"
     assert body["documents"][0]["size"] == len(b"%PDF-1.7 data")
 
