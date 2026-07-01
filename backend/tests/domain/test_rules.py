@@ -4,10 +4,17 @@ from datetime import date
 
 import pytest
 
-from app.domain.errors import DocumentRequired
+from app.domain.errors import DocumentRequired, InvalidDocument
 from app.domain.obligation import Status
-from app.domain.rules import assert_document_gate, is_overdue
+from app.domain.rules import (
+    assert_document_allowed,
+    assert_document_gate,
+    is_overdue,
+)
 from tests.domain.conftest import make_obligation
+
+ALLOWED = frozenset({"application/pdf", "image/*"})
+MAX_BYTES = 1024
 
 TODAY = date(2026, 6, 27)
 PAST = date(2026, 6, 1)
@@ -58,3 +65,48 @@ class TestDocumentGate:
         ob = make_obligation(requires_document=True, has_document=False)
         for target in (Status.IN_PROGRESS, Status.PENDING, Status.DONE):
             assert_document_gate(ob, target)
+
+
+class TestDocumentAllowed:
+    def test_accepts_allowed_type_within_limit(self) -> None:
+        assert_document_allowed(
+            size=512,
+            content_type="application/pdf",
+            max_bytes=MAX_BYTES,
+            allowed_content_types=ALLOWED,
+        )
+
+    def test_accepts_type_via_family_wildcard(self) -> None:
+        assert_document_allowed(
+            size=512,
+            content_type="image/png",
+            max_bytes=MAX_BYTES,
+            allowed_content_types=ALLOWED,
+        )
+
+    def test_rejects_empty_file(self) -> None:
+        with pytest.raises(InvalidDocument):
+            assert_document_allowed(
+                size=0,
+                content_type="application/pdf",
+                max_bytes=MAX_BYTES,
+                allowed_content_types=ALLOWED,
+            )
+
+    def test_rejects_oversized_file(self) -> None:
+        with pytest.raises(InvalidDocument):
+            assert_document_allowed(
+                size=MAX_BYTES + 1,
+                content_type="application/pdf",
+                max_bytes=MAX_BYTES,
+                allowed_content_types=ALLOWED,
+            )
+
+    def test_rejects_unsupported_type(self) -> None:
+        with pytest.raises(InvalidDocument):
+            assert_document_allowed(
+                size=512,
+                content_type="application/x-msdownload",
+                max_bytes=MAX_BYTES,
+                allowed_content_types=ALLOWED,
+            )
