@@ -50,7 +50,7 @@ export default async function ObligationDetailPage({
         </Link>
         <Link
           href={`/obligations/${id}/edit`}
-          className="text-sm font-medium text-slate-700 hover:underline"
+          className="inline-flex items-center justify-center rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-900 hover:bg-slate-100"
         >
           {dict.detail.edit}
         </Link>
