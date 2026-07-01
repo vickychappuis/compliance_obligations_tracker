@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from app.domain.errors import (
     DocumentRequired,
     DomainError,
+    InvalidDocument,
     InvalidTransition,
     NotFound,
     VersionConflict,
@@ -19,6 +20,7 @@ _STATUS_BY_ERROR: dict[type[DomainError], int] = {
     InvalidTransition: 409,
     VersionConflict: 409,
     DocumentRequired: 422,
+    InvalidDocument: 422,
 }
 
 

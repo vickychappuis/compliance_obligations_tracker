@@ -90,7 +90,9 @@ def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -
 
 
 def test_attach_then_remove_document(client: TestClient) -> None:
-    oid = client.post("/obligations", json=_payload(requires_document=True)).json()["id"]
+    oid = client.post("/obligations", json=_payload(requires_document=True)).json()[
+        "id"
+    ]
     attached = client.post(
         f"/obligations/{oid}/document",
         files={"file": ("filing.pdf", b"%PDF-1.7 data", "application/pdf")},
@@ -102,6 +104,42 @@ def test_attach_then_remove_document(client: TestClient) -> None:
     body = removed.json()
     assert body["documents"] == []
     assert body["has_document"] is False
+
+
+def test_attach_unsupported_type_returns_422(client: TestClient) -> None:
+    oid = client.post("/obligations", json=_payload(requires_document=True)).json()[
+        "id"
+    ]
+    res = client.post(
+        f"/obligations/{oid}/document",
+        files={"file": ("evil.exe", b"MZ payload", "application/x-msdownload")},
+    )
+    assert res.status_code == 422
+    assert res.json()["error"]["type"] == "InvalidDocument"
+
+
+def test_attach_empty_file_returns_422(client: TestClient) -> None:
+    oid = client.post("/obligations", json=_payload(requires_document=True)).json()[
+        "id"
+    ]
+    res = client.post(
+        f"/obligations/{oid}/document",
+        files={"file": ("empty.pdf", b"", "application/pdf")},
+    )
+    assert res.status_code == 422
+    assert res.json()["error"]["type"] == "InvalidDocument"
+
+
+def test_attach_image_is_accepted_via_wildcard(client: TestClient) -> None:
+    oid = client.post("/obligations", json=_payload(requires_document=True)).json()[
+        "id"
+    ]
+    res = client.post(
+        f"/obligations/{oid}/document",
+        files={"file": ("scan.png", b"\x89PNG\r\n\x1a\n", "image/png")},
+    )
+    assert res.status_code == 200
+    assert res.json()["documents"][0]["filename"] == "scan.png"
 
 
 def test_remove_missing_document_returns_404(client: TestClient) -> None:
@@ -118,8 +156,18 @@ def test_get_missing_returns_404(client: TestClient) -> None:
 
 
 def test_list_filters_and_sorting(client: TestClient) -> None:
-    client.post("/obligations", json=_payload(owner="A", due_date=(date.today() + timedelta(days=20)).isoformat()))
-    client.post("/obligations", json=_payload(owner="B", due_date=(date.today() + timedelta(days=5)).isoformat()))
+    client.post(
+        "/obligations",
+        json=_payload(
+            owner="A", due_date=(date.today() + timedelta(days=20)).isoformat()
+        ),
+    )
+    client.post(
+        "/obligations",
+        json=_payload(
+            owner="B", due_date=(date.today() + timedelta(days=5)).isoformat()
+        ),
+    )
 
     res = client.get("/obligations")
     assert res.status_code == 200
@@ -132,8 +180,14 @@ def test_list_filters_and_sorting(client: TestClient) -> None:
 
 
 def test_summary_endpoint(client: TestClient) -> None:
-    client.post("/obligations", json=_payload(due_date=(date.today() - timedelta(days=1)).isoformat()))
-    client.post("/obligations", json=_payload(due_date=(date.today() + timedelta(days=10)).isoformat()))
+    client.post(
+        "/obligations",
+        json=_payload(due_date=(date.today() - timedelta(days=1)).isoformat()),
+    )
+    client.post(
+        "/obligations",
+        json=_payload(due_date=(date.today() + timedelta(days=10)).isoformat()),
+    )
 
     res = client.get("/obligations/summary")
     assert res.status_code == 200

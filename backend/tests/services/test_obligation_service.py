@@ -5,7 +5,14 @@ from datetime import date, timedelta
 import pytest
 from sqlalchemy.orm import Session
 
-from app.domain.errors import DocumentRequired, InvalidTransition, NotFound, VersionConflict
+from app.config import Settings
+from app.domain.errors import (
+    DocumentRequired,
+    InvalidDocument,
+    InvalidTransition,
+    NotFound,
+    VersionConflict,
+)
 from app.domain.obligation import ObligationType, Status
 from app.services.obligation_service import (
     ObligationCreate,
@@ -98,6 +105,29 @@ def test_attach_document_uploads_bytes_and_signs_url(session: Session) -> None:
     assert url == f"https://signed.example/{document.storage_path}"
 
 
+def test_attach_document_rejects_oversized_file(session: Session) -> None:
+    storage = FakeStorage()
+    svc = ObligationService(
+        session, storage=storage, settings=Settings(max_upload_mb=1)
+    )
+    view = svc.create(_new(requires_document=True))
+
+    oversized = b"x" * (1024 * 1024 + 1)
+    with pytest.raises(InvalidDocument):
+        svc.attach_document(view.row.id, "big.pdf", "application/pdf", oversized)
+    assert storage.uploaded == {}
+
+
+def test_attach_document_rejects_unsupported_type(session: Session) -> None:
+    storage = FakeStorage()
+    svc = ObligationService(session, storage=storage)
+    view = svc.create(_new(requires_document=True))
+
+    with pytest.raises(InvalidDocument):
+        svc.attach_document(view.row.id, "evil.exe", "application/x-msdownload", b"MZ")
+    assert storage.uploaded == {}
+
+
 def test_document_download_url_missing_raises_not_found(session: Session) -> None:
     svc = ObligationService(session, storage=FakeStorage())
     view = svc.create(_new())
@@ -174,7 +204,9 @@ def test_list_is_sorted_by_due_date_and_filters(session: Session) -> None:
 def test_update_fields_does_not_change_status(session: Session) -> None:
     svc = ObligationService(session)
     view = svc.create(_new())
-    updated = svc.update_fields(view.row.id, ObligationPatch(title="Renamed", owner="New"))
+    updated = svc.update_fields(
+        view.row.id, ObligationPatch(title="Renamed", owner="New")
+    )
     assert updated.row.title == "Renamed"
     assert updated.row.owner == "New"
     assert updated.row.status == Status.PENDING.value

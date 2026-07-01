@@ -24,7 +24,16 @@ class DocumentRequired(DomainError):
     """Raised when moving to `submitted` without a required attached document."""
 
     def __init__(self) -> None:
-        super().__init__("A document is required before this obligation can be submitted")
+        super().__init__(
+            "A document is required before this obligation can be submitted"
+        )
+
+
+class InvalidDocument(DomainError):
+    """Raised when an uploaded document violates the size or type policy."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
 
 
 class NotFound(DomainError):
@@ -39,4 +48,6 @@ class VersionConflict(DomainError):
     """Raised when an optimistic-lock version check fails (concurrent update)."""
 
     def __init__(self) -> None:
-        super().__init__("The obligation was modified by another request; reload and retry")
+        super().__init__(
+            "The obligation was modified by another request; reload and retry"
+        )
