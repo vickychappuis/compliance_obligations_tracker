@@ -62,6 +62,7 @@ export const en = {
     attachDocument: "Attach document",
     attach: "Attach",
     file: "File",
+    uploadPrompt: "Click to upload a file",
     fileHint: "PDF, Word, or image up to 10 MB.",
     download: "Download",
     remove: "Remove",

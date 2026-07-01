@@ -64,6 +64,7 @@ export const es: typeof en = {
     attachDocument: "Adjuntar documento",
     attach: "Adjuntar",
     file: "Archivo",
+    uploadPrompt: "Haz clic para subir un archivo",
     fileHint: "PDF, Word o imagen de hasta 10 MB.",
     download: "Descargar",
     remove: "Eliminar",
