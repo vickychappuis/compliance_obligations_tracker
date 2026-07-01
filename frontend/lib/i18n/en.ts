@@ -86,6 +86,7 @@ export const en = {
     requiresDocument: "Requires document",
     companyTaxId: "Company tax ID",
     companyTaxIdHint: "Stored securely and shown masked after saving.",
+    companyTaxIdEditHint: "Leave blank to keep the current tax ID.",
     create: "Create",
     save: "Save changes",
     cancel: "Cancel",

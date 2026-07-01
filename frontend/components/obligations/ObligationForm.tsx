@@ -26,6 +26,8 @@ export function ObligationForm({
   includeTaxId,
   cancelHref,
   defaultValues = {},
+  taxIdOptional = false,
+  taxIdPlaceholder = "123456789",
 }: {
   dict: Dictionary;
   action: (prev: ActionState, formData: FormData) => Promise<ActionState>;
@@ -33,6 +35,8 @@ export function ObligationForm({
   includeTaxId: boolean;
   cancelHref: string;
   defaultValues?: DefaultValues;
+  taxIdOptional?: boolean;
+  taxIdPlaceholder?: string;
 }) {
   const [state, formAction] = useActionState(action, {});
 
@@ -105,13 +109,15 @@ export function ObligationForm({
               id="company_tax_id"
               name="company_tax_id"
               inputMode="numeric"
-              placeholder="123456789"
+              placeholder={taxIdPlaceholder}
               aria-describedby="company_tax_id_hint"
-              required
+              required={!taxIdOptional}
             />
           </Field>
           <p id="company_tax_id_hint" className="text-xs text-slate-500">
-            {dict.form.companyTaxIdHint}
+            {taxIdOptional
+              ? dict.form.companyTaxIdEditHint
+              : dict.form.companyTaxIdHint}
           </p>
         </div>
       )}
