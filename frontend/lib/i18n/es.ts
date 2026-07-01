@@ -1,3 +1,5 @@
+import { MAX_UPLOAD_MB } from "../constants";
+
 import type { en } from "./en";
 
 export const es: typeof en = {
@@ -66,8 +68,8 @@ export const es: typeof en = {
     file: "Archivo",
     uploadPrompt: "Haz clic para subir un archivo",
     uploading: "Subiendo…",
-    fileTooLarge: "Ese archivo supera el límite de 10 MB.",
-    fileHint: "PDF, Word o imagen de hasta 10 MB.",
+    fileTooLarge: `Ese archivo supera el límite de ${MAX_UPLOAD_MB} MB.`,
+    fileHint: `PDF, Word o imagen de hasta ${MAX_UPLOAD_MB} MB.`,
     download: "Descargar",
     remove: "Eliminar",
     removeConfirm: "¿Eliminar este documento? Esta acción no se puede deshacer.",

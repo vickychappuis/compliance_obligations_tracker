@@ -1,3 +1,5 @@
+import { MAX_UPLOAD_MB } from "../constants";
+
 export const en = {
   appTitle: "Compliance Obligations Tracker",
   nav: {
@@ -64,8 +66,8 @@ export const en = {
     file: "File",
     uploadPrompt: "Click to upload a file",
     uploading: "Uploading…",
-    fileTooLarge: "That file is over the 10 MB limit.",
-    fileHint: "PDF, Word, or image up to 10 MB.",
+    fileTooLarge: `That file is over the ${MAX_UPLOAD_MB} MB limit.`,
+    fileHint: `PDF, Word, or image up to ${MAX_UPLOAD_MB} MB.`,
     download: "Download",
     remove: "Remove",
     removeConfirm: "Remove this document? This cannot be undone.",

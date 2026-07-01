@@ -4,9 +4,8 @@ import { useActionState, useEffect, useRef, useState, type ChangeEvent } from "r
 
 import { cn } from "@/lib/cn";
 import { attachDocumentAction } from "@/lib/actions/obligations";
+import { MAX_UPLOAD_BYTES } from "@/lib/constants";
 import type { Dictionary } from "@/lib/i18n";
-
-const MAX_BYTES = 10 * 1024 * 1024;
 
 export function AttachDocumentForm({ id, dict }: { id: string; dict: Dictionary }) {
   const [state, formAction, isPending] = useActionState(
@@ -30,7 +29,7 @@ export function AttachDocumentForm({ id, dict }: { id: string; dict: Dictionary 
       setFileName(null);
       return;
     }
-    if (file.size > MAX_BYTES) {
+    if (file.size > MAX_UPLOAD_BYTES) {
       setSizeError(true);
       setFileName(null);
       event.target.value = "";
