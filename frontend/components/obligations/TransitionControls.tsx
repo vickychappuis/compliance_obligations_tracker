@@ -34,6 +34,7 @@ function TransitionButton({
   version,
   label,
   disabled,
+  primary,
   blockedHint,
   confirmMessage,
 }: {
@@ -42,6 +43,7 @@ function TransitionButton({
   version: number;
   label: string;
   disabled: boolean;
+  primary: boolean;
   blockedHint?: string;
   confirmMessage?: string;
 }) {
@@ -54,7 +56,7 @@ function TransitionButton({
         <input type="hidden" name="expected_version" value={version} />
         <SubmitButton
           disabled={disabled}
-          variant={target === "done" ? "primary" : "secondary"}
+          variant={primary ? "primary" : "secondary"}
           onClick={
             confirmMessage
               ? (event) => {
@@ -99,7 +101,7 @@ export function TransitionControls({
     <div className="flex flex-wrap items-start gap-3">
       {allowed.map((target) => {
         const blocked = target === "submitted" && requiresDocument && !hasDocument;
-        const isBackward = STATUS_ORDER[target] < STATUS_ORDER[status];
+        const isForward = STATUS_ORDER[target] > STATUS_ORDER[status];
         return (
           <TransitionButton
             key={target}
@@ -108,8 +110,9 @@ export function TransitionControls({
             version={version}
             label={transitionLabel(status, target, dict)}
             disabled={blocked}
+            primary={isForward}
             blockedHint={blocked ? dict.detail.submitBlocked : undefined}
-            confirmMessage={isBackward ? dict.transition.confirm : undefined}
+            confirmMessage={!isForward ? dict.transition.confirm : undefined}
           />
         );
       })}
