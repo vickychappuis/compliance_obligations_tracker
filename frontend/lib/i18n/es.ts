@@ -57,6 +57,7 @@ export const es: typeof en = {
     document: "Documento",
     noDocument: "Sin documento adjunto",
     auditHistory: "Historial de auditoría",
+    created: "Creada",
     transitions: "Acciones disponibles",
     noTransitions: "No hay acciones disponibles.",
     submitBlocked: "Se requiere un documento antes de poder enviarla.",

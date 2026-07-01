@@ -24,15 +24,26 @@ export function AuditHistory({
             {formatDateTime(entry.timestamp, locale)}
           </span>
           {entry.from_status ? (
-            <StatusBadge
-              status={entry.from_status}
-              label={dict.status[entry.from_status]}
-            />
+            <>
+              <StatusBadge
+                status={entry.from_status}
+                label={dict.status[entry.from_status]}
+              />
+              <span aria-hidden>→</span>
+              <StatusBadge
+                status={entry.to_status}
+                label={dict.status[entry.to_status]}
+              />
+            </>
           ) : (
-            <span className="text-slate-400">—</span>
+            <>
+              <span className="text-slate-500">{dict.detail.created}</span>
+              <StatusBadge
+                status={entry.to_status}
+                label={dict.status[entry.to_status]}
+              />
+            </>
           )}
-          <span aria-hidden>→</span>
-          <StatusBadge status={entry.to_status} label={dict.status[entry.to_status]} />
         </li>
       ))}
     </ol>

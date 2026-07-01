@@ -55,6 +55,7 @@ export const en = {
     document: "Document",
     noDocument: "No document attached",
     auditHistory: "Audit history",
+    created: "Created",
     transitions: "Available actions",
     noTransitions: "No actions available.",
     submitBlocked: "A document is required before this can be submitted.",
