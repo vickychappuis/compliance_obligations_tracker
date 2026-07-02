@@ -2,7 +2,7 @@
 """PostToolUse auto-formatter for Edit/Write/MultiEdit.
 
 Formats the edited file in place: ruff for Python (via uvx), the project's
-local eslint --fix for TS/JS. Never blocks — missing tools are skipped silently.
+local eslint --fix for TS/JS. Never blocks - missing tools are skipped silently.
 """
 
 import json

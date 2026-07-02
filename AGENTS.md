@@ -4,7 +4,7 @@ Guidance for working in this repository. Read this before making changes.
 
 ## Overview
 
-Compliance Obligations Tracker — accountability and compliance software for founders. It tracks a company's compliance obligations: what must be filed, when it is due, what state it is in, and what documentation backs it.
+Compliance Obligations Tracker - accountability and compliance software for founders. It tracks a company's compliance obligations: what must be filed, when it is due, what state it is in, and what documentation backs it.
 
 This is a high-care domain. A miscalculated due date, a leaked sensitive field, or an unrecorded state change are expensive errors. Treat the domain rules below as non-negotiable.
 
@@ -22,22 +22,22 @@ Backend and frontend are independent: the frontend consumes the API and never re
 
 ## Tech stack
 
-**Backend** — FastAPI + Pydantic + PostgreSQL. Layered: `routes/` → `services/` → `data access/` → `domain/`. (SQLite is an acceptable fallback for local persistence.)
+**Backend** - FastAPI + Pydantic + PostgreSQL. Layered: `routes/` → `services/` → `data access/` → `domain/`. (SQLite is an acceptable fallback for local persistence.)
 
-**Frontend** — Next.js (App Router) + React + TypeScript in `strict` mode (no `any`) + Tailwind, no heavy UI library. Server Components by default; Server Actions for mutations.
+**Frontend** - Next.js (App Router) + React + TypeScript in `strict` mode (no `any`) + Tailwind, no heavy UI library. Server Components by default; Server Actions for mutations.
 
-## Domain model — Obligation
+## Domain model - Obligation
 
 - `id`
-- `type` — one of `annual_report | franchise_tax | boi_report | registered_agent_renewal`
+- `type` - one of `annual_report | franchise_tax | boi_report | registered_agent_renewal`
 - `title`, `description`
-- `status` — one of `pending | in_progress | submitted | done`
+- `status` - one of `pending | in_progress | submitted | done`
 - `dueDate`
-- `owner` — required
+- `owner` - required
 - `requiresDocument` (bool) and an attached document when set
-- `companyTaxId` — sensitive
+- `companyTaxId` - sensitive
 
-## Domain rules (critical — these are the core of the system)
+## Domain rules (critical - these are the core of the system)
 
 These live in the backend domain layer, isolated from HTTP and persistence. Rules never go in route handlers.
 
@@ -80,7 +80,7 @@ State changes must be safe under simultaneous requests. The chosen mechanism (ve
 - Routes are thin: validate input, call a service, map results/errors to HTTP.
 - Validation is server-side. Do not rely on the client to enforce any rule.
 - Consistent error model: meaningful HTTP status codes, `404` for missing resources, structured error bodies.
-- Pydantic models should reflect reality — no permissive `Any` to paper over shape mismatches.
+- Pydantic models should reflect reality - no permissive `Any` to paper over shape mismatches.
 - Provide a state-change endpoint distinct from generic update; it runs the transition rules.
 
 ## Frontend conventions
@@ -94,9 +94,9 @@ State changes must be safe under simultaneous requests. The chosen mechanism (ve
 
 Expected views:
 
-- **Dashboard** — KPIs (total, by status, overdue, upcoming), filtering, list sorted by `dueDate` with overdue items highlighted.
-- **Detail** — all fields, masked `taxId`, audit history, and the valid transitions available for the current state. The submitted action is disabled when a required document is missing.
-- **Create / edit** — with validation.
+- **Dashboard** - KPIs (total, by status, overdue, upcoming), filtering, list sorted by `dueDate` with overdue items highlighted.
+- **Detail** - all fields, masked `taxId`, audit history, and the valid transitions available for the current state. The submitted action is disabled when a required document is missing.
+- **Create / edit** - with validation.
 
 ## Testing
 

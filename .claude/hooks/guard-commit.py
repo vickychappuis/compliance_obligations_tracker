@@ -22,7 +22,7 @@ def main():
     if "git commit" in command and CO_AUTHOR.search(command):
         print(
             "Blocked: this commit message contains a Co-Authored-By trailer. "
-            "This repo omits co-author attribution — remove it and retry.",
+            "This repo omits co-author attribution - remove it and retry.",
             file=sys.stderr,
         )
         sys.exit(2)

@@ -1,4 +1,4 @@
-"""The obligation state machine — the single source of truth for transitions.
+"""The obligation state machine - the single source of truth for transitions.
 
 Allowed transitions (any transition not listed here is invalid):
 

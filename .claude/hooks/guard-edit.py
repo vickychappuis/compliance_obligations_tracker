@@ -3,7 +3,7 @@
 
 Blocks writes that violate two AGENTS.md non-negotiables:
   - companyTaxId is never logged; secrets are never hardcoded.
-  - TypeScript is strict — no `any`.
+  - TypeScript is strict - no `any`.
 
 Exit 2 + stderr blocks the tool call and feeds the reason back to the model.
 """
@@ -42,7 +42,7 @@ ANY_PATTERNS = [
 ]
 
 # `overdue` is derived (is_overdue), never a stored status. These match only
-# attempts to make it a status value — not the legitimate `overdue: bool` field.
+# attempts to make it a status value - not the legitimate `overdue: bool` field.
 OVERDUE_STATUS = [
     re.compile(r"OVERDUE\s*=\s*[\"']overdue[\"']"),
     re.compile(r"\bStatus\.OVERDUE\b"),
@@ -60,13 +60,13 @@ def find_violations(file_path, content):
 
         if TAX_ID.search(line) and LOG_SINK.search(line) and "mask" not in line.lower():
             violations.append(
-                f"  line {i}: companyTaxId flows into a log/print sink — "
+                f"  line {i}: companyTaxId flows into a log/print sink - "
                 f"it must never be logged.\n    {stripped[:120]}"
             )
 
         if JWT.search(line) or HARDCODED_KEY.search(line):
             violations.append(
-                f"  line {i}: looks like a hardcoded secret / service key — "
+                f"  line {i}: looks like a hardcoded secret / service key - "
                 f"read it from the environment instead.\n    {stripped[:80]}"
             )
 

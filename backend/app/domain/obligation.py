@@ -27,7 +27,7 @@ class Obligation:
 
     `has_document` is a fact the domain needs to enforce the document gate; it is
     populated by the service from persistence. `company_tax_id` is stored in full
-    here — masking is a presentation concern handled at the schema layer, never
+    here - masking is a presentation concern handled at the schema layer, never
     in the domain.
     """
 

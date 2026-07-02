@@ -5,8 +5,8 @@ compliance obligations: what must be filed, when it is due, what state it is
 in, and what documentation backs it. See [AGENTS.md](./AGENTS.md) for the full
 specification and domain rules.
 
-- **Backend** — FastAPI + Pydantic + SQLAlchemy + PostgreSQL (`/backend`)
-- **Frontend** — Next.js (App Router) + React + TypeScript + Tailwind (`/frontend`)
+- **Backend** - FastAPI + Pydantic + SQLAlchemy + PostgreSQL (`/backend`)
+- **Frontend** - Next.js (App Router) + React + TypeScript + Tailwind (`/frontend`)
 
 ## Run
 
@@ -25,7 +25,7 @@ upload/download (see below); everything else works out of the box.
 
 Documents live in a private Supabase Storage bucket, downloaded via
 short-lived signed URLs. Set `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, and
-`SUPABASE_BUCKET` (default `obligation-documents`) — in `backend/.env` for
+`SUPABASE_BUCKET` (default `obligation-documents`) - in `backend/.env` for
 local dev (see `backend/.env.example`), or exported in your shell for Docker.
 Works against a cloud project or a local `supabase start` stack (from inside
 Docker, use `http://host.docker.internal:54321`).
