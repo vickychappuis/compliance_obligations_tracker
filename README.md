@@ -23,12 +23,32 @@ upload/download (see below); everything else works out of the box.
 
 ## Document storage (optional)
 
-Documents live in a private Supabase Storage bucket, downloaded via
-short-lived signed URLs. Set `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, and
-`SUPABASE_BUCKET` (default `obligation-documents`) - in `backend/.env` for
-local dev (see `backend/.env.example`), or exported in your shell for Docker.
-Works against a cloud project or a local `supabase start` stack (from inside
-Docker, use `http://host.docker.internal:54321`).
+Documents live in a private Supabase Storage bucket. Without this setup the
+rest of the app works fine; uploads and downloads will fail gracefully.
+
+### Option A - Local Supabase stack
+
+```bash
+supabase start                    # starts Supabase in Docker
+supabase status                   # prints the service_role key and API URL
+supabase storage create-bucket obligation-documents --private
+```
+
+Copy the output into `backend/.env` (see `backend/.env.example`):
+
+```env
+SUPABASE_URL=http://localhost:54321
+SUPABASE_SERVICE_KEY=<service_role key from supabase status>
+```
+
+> When running the full stack via `docker compose`, use
+> `http://host.docker.internal:54321` as the URL instead.
+
+### Option B - Supabase cloud project
+
+Create a private bucket named `obligation-documents` in the Storage tab, then
+set `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` (Settings → API → service_role)
+in `backend/.env`.
 
 ## Backend development
 
