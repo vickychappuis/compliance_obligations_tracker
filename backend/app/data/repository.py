@@ -49,6 +49,14 @@ class ObligationRepository:
         )
         return result.rowcount
 
+    def bump_version(self, obligation_id: str) -> int:
+        result = self.session.execute(
+            update(ObligationRow)
+            .where(ObligationRow.id == obligation_id)
+            .values(version=ObligationRow.version + 1)
+        )
+        return result.rowcount
+
     def add_audit_entry(
         self, obligation_id: str, from_status: Status | None, to_status: Status
     ) -> AuditEntryRow:

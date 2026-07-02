@@ -68,6 +68,7 @@ def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -
     body = attached.json()
     assert body["has_document"] is True
     assert body["can_submit"] is True
+    assert body["version"] == 3
     assert body["documents"][0]["filename"] == "filing.pdf"
     assert body["documents"][0]["size"] == len(b"%PDF-1.7 data")
 
@@ -78,14 +79,14 @@ def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -
 
     submitted = client.post(
         f"/obligations/{oid}/transition",
-        json={"target_status": "submitted", "expected_version": 2},
+        json={"target_status": "submitted", "expected_version": 3},
     )
     assert submitted.status_code == 200
     assert submitted.json()["status"] == "submitted"
 
     stale = client.post(
         f"/obligations/{oid}/transition",
-        json={"target_status": "done", "expected_version": 2},
+        json={"target_status": "done", "expected_version": 3},
     )
     assert stale.status_code == 409
     assert stale.json()["error"]["type"] == "VersionConflict"

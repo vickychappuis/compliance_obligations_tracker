@@ -123,7 +123,9 @@ class ObligationService:
             row.requires_document = patch.requires_document
         if patch.company_tax_id is not None:
             row.company_tax_id = patch.company_tax_id
+        self.repo.bump_version(obligation_id)
         self.session.commit()
+        self.session.refresh(row)
         return self._view(row)
 
     def change_state(
@@ -162,6 +164,7 @@ class ObligationService:
         self.repo.add_document(
             obligation_id, filename, content_type, storage_path, len(data)
         )
+        self.repo.bump_version(obligation_id)
         self.session.commit()
         self.session.refresh(row)
         return self._view(row)
@@ -173,6 +176,7 @@ class ObligationService:
             raise NotFound(document_id)
         self.storage.remove(document.storage_path)
         self.repo.delete_document(document)
+        self.repo.bump_version(obligation_id)
         self.session.commit()
         self.session.refresh(row)
         return self._view(row)

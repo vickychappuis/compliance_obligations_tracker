@@ -84,8 +84,12 @@ def test_document_gate_blocks_then_allows_submit(session: Session) -> None:
     with pytest.raises(DocumentRequired):
         svc.change_state(view.row.id, Status.SUBMITTED, expected_version=2)
 
-    svc.attach_document(view.row.id, "filing.pdf", "application/pdf", b"%PDF-1.7 data")
-    submitted = svc.change_state(view.row.id, Status.SUBMITTED, expected_version=2)
+    attached = svc.attach_document(
+        view.row.id, "filing.pdf", "application/pdf", b"%PDF-1.7 data"
+    )
+    submitted = svc.change_state(
+        view.row.id, Status.SUBMITTED, expected_version=attached.row.version
+    )
     assert submitted.row.status == Status.SUBMITTED.value
     assert submitted.has_document is True
 
@@ -164,6 +168,43 @@ def test_version_conflict_on_stale_expected_version(session: Session) -> None:
     svc.change_state(view.row.id, Status.IN_PROGRESS, expected_version=1)
     with pytest.raises(VersionConflict):
         svc.change_state(view.row.id, Status.SUBMITTED, expected_version=1)
+
+
+def test_document_mutations_bump_version(session: Session) -> None:
+    storage = FakeStorage()
+    svc = ObligationService(session, storage=storage)
+    view = svc.create(_new(requires_document=True))
+
+    attached = svc.attach_document(view.row.id, "filing.pdf", "application/pdf", b"abc")
+    assert attached.row.version == 2
+
+    removed = svc.remove_document(view.row.id, attached.documents[0].id)
+    assert removed.row.version == 3
+
+
+def test_update_fields_bumps_version(session: Session) -> None:
+    svc = ObligationService(session)
+    view = svc.create(_new())
+    updated = svc.update_fields(view.row.id, ObligationPatch(requires_document=True))
+    assert updated.row.version == 2
+
+
+def test_document_removal_invalidates_stale_transition(session: Session) -> None:
+    storage = FakeStorage()
+    svc = ObligationService(session, storage=storage)
+    view = svc.create(_new(requires_document=True))
+    svc.change_state(view.row.id, Status.IN_PROGRESS, expected_version=1)
+    attached = svc.attach_document(view.row.id, "filing.pdf", "application/pdf", b"abc")
+    version_before_removal = attached.row.version
+
+    svc.remove_document(view.row.id, attached.documents[0].id)
+
+    with pytest.raises(VersionConflict):
+        svc.change_state(
+            view.row.id, Status.SUBMITTED, expected_version=version_before_removal
+        )
+    session.refresh(view.row)
+    assert view.row.status == Status.IN_PROGRESS.value
 
 
 def test_get_and_change_missing_raises_not_found(session: Session) -> None:
