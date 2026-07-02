@@ -26,7 +26,7 @@ Branches are **feature branches based off `develop`**.
 | Part | Values | Notes |
 |---|---|---|
 | `tipo` | `feature`, `fix`, `chore` | Same criteria as commit types |
-| `issue-id` | Ticket ID (ClickUp, GitHub, Trello…) | **Optional** — depends on the project |
+| `issue-id` | Ticket ID (ClickUp, GitHub, Trello…) | **Optional** - depends on the project |
 | `description` | Short English summary | `kebab-case` |
 
 **Examples:**
@@ -58,7 +58,7 @@ Format follows [Conventional Commits](https://www.conventionalcommits.org/en/v1.
 | `feat` | New functionality |
 | `fix` | Bug fixes |
 | `refactor` | Internal improvement, no visible behavior change |
-| `chore` | Maintenance tasks — scripts, deps, config |
+| `chore` | Maintenance tasks - scripts, deps, config |
 | `docs` | Documentation changes |
 | `style` | Code formatting/style (not CSS, not visual) |
 
@@ -76,8 +76,8 @@ docs(readme): update setup instructions
 ### Rules
 
 - All commit messages must be in **English**
-- Use **present tense** — `add`, not `added`; `fix`, not `fixed`
-- Be specific — avoid `fix bug`, `update code`, `changes`, etc.
+- Use **present tense** - `add`, not `added`; `fix`, not `fixed`
+- Be specific - avoid `fix bug`, `update code`, `changes`, etc.
 - Never add `Co-authored-by` trailers unless explicitly requested
 
 ---
