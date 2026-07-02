@@ -5,6 +5,8 @@ compliance obligations: what must be filed, when it is due, what state it is
 in, and what documentation backs it. See [AGENTS.md](./AGENTS.md) for the full
 specification and domain rules.
 
+Hosted version: https://obligationstracker.vickychappuis.dev/
+
 - **Backend** - FastAPI + Pydantic + SQLAlchemy + PostgreSQL (`/backend`)
 - **Frontend** - Next.js (App Router) + React + TypeScript + Tailwind (`/frontend`)
 

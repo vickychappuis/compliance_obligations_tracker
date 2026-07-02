@@ -34,6 +34,31 @@ def test_create_masks_tax_id_and_starts_pending(client: TestClient) -> None:
     assert len(body["audit"]) == 1
 
 
+def test_create_rejects_invalid_tax_id_without_echoing_value(
+    client: TestClient,
+) -> None:
+    invalid_tax_id = "12#SECRET6789"
+    res = client.post("/obligations", json=_payload(company_tax_id=invalid_tax_id))
+    assert res.status_code == 422
+    assert res.json()["error"]["type"] == "ValidationError"
+    assert invalid_tax_id not in res.text
+
+
+def test_patch_rejects_invalid_tax_id_without_echoing_value(
+    client: TestClient,
+) -> None:
+    created = client.post("/obligations", json=_payload()).json()
+    invalid_tax_id = "BAD#SECRET6789"
+
+    res = client.patch(
+        f"/obligations/{created['id']}", json={"company_tax_id": invalid_tax_id}
+    )
+
+    assert res.status_code == 422
+    assert res.json()["error"]["type"] == "ValidationError"
+    assert invalid_tax_id not in res.text
+
+
 def test_full_lifecycle_with_document_gate_and_concurrency(client: TestClient) -> None:
     created = client.post("/obligations", json=_payload(requires_document=True)).json()
     oid = created["id"]

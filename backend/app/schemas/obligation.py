@@ -1,13 +1,19 @@
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.domain.obligation import ObligationType, Status
 from app.services.obligation_service import ObligationView, Summary
 
 MASK_PREFIX = "••••"
+COMPANY_TAX_ID_MESSAGE = (
+    "company_tax_id must contain 4-64 letters or digits and may use spaces or "
+    "hyphens as separators"
+)
+_COMPANY_TAX_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9 -]{2,62}[A-Za-z0-9]$")
 
 
 def mask_tax_id(value: str) -> str:
@@ -15,6 +21,14 @@ def mask_tax_id(value: str) -> str:
     if len(digits) <= 4:
         return MASK_PREFIX
     return f"{MASK_PREFIX}{digits[-4:]}"
+
+
+def validate_company_tax_id(value: str) -> str:
+    tax_id = value.strip()
+    alnum_count = sum(char.isalnum() for char in tax_id)
+    if not _COMPANY_TAX_ID_RE.fullmatch(tax_id) or alnum_count < 4:
+        raise ValueError(COMPANY_TAX_ID_MESSAGE)
+    return tax_id
 
 
 class ObligationCreateRequest(BaseModel):
@@ -26,6 +40,11 @@ class ObligationCreateRequest(BaseModel):
     requires_document: bool = False
     company_tax_id: str = Field(min_length=1, max_length=64)
 
+    @field_validator("company_tax_id")
+    @classmethod
+    def validate_tax_id(cls, value: str) -> str:
+        return validate_company_tax_id(value)
+
 
 class ObligationPatchRequest(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=200)
@@ -35,6 +54,13 @@ class ObligationPatchRequest(BaseModel):
     owner: str | None = Field(default=None, min_length=1, max_length=200)
     requires_document: bool | None = None
     company_tax_id: str | None = Field(default=None, min_length=1, max_length=64)
+
+    @field_validator("company_tax_id")
+    @classmethod
+    def validate_tax_id(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return validate_company_tax_id(value)
 
 
 class TransitionRequest(BaseModel):
