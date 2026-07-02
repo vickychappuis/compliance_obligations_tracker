@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     supabase_bucket: str = "obligation-documents"
     signed_url_expiry_seconds: int = 3600
 
+    allowed_origins: str = "http://localhost:3000"
+
     max_upload_mb: int = 10
     allowed_document_types: str = (
         "application/pdf,"
