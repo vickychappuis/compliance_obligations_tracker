@@ -1,78 +1,55 @@
 # Compliance Obligations Tracker
 
-Accountability and compliance software for founders. Tracks a company's compliance
-obligations: what must be filed, when it is due, what state it is in, and what
-documentation backs it.
-
-See [AGENTS.md](./AGENTS.md) for the full specification and domain rules.
-
-## Stack
+Accountability and compliance software for founders. Tracks a company's
+compliance obligations: what must be filed, when it is due, what state it is
+in, and what documentation backs it. See [AGENTS.md](./AGENTS.md) for the full
+specification and domain rules.
 
 - **Backend** — FastAPI + Pydantic + SQLAlchemy + PostgreSQL (`/backend`)
 - **Frontend** — Next.js (App Router) + React + TypeScript + Tailwind (`/frontend`)
 
-## Run with Docker
+## Run
 
 ```bash
 docker compose up --build
 ```
 
 - Frontend: http://localhost:3000
-- API: http://localhost:8000 (health check: http://localhost:8000/health)
+- API: http://localhost:8000 (health check: `/health`)
 - Postgres: localhost:5432 (user/pass/db: `compliance`)
 
-## Backend — local development
+No configuration needed. The only feature that requires setup is document
+upload/download (see below); everything else works out of the box.
+
+## Document storage (optional)
+
+Documents live in a private Supabase Storage bucket, downloaded via
+short-lived signed URLs. Set `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, and
+`SUPABASE_BUCKET` (default `obligation-documents`) — in `backend/.env` for
+local dev (see `backend/.env.example`), or exported in your shell for Docker.
+Works against a cloud project or a local `supabase start` stack (from inside
+Docker, use `http://host.docker.internal:54321`).
+
+## Backend development
 
 ```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
-
-# Run tests (domain layer needs no database)
-pytest
-
-# Run the API against a local Postgres
+pytest                                 # domain tests need no database
 export DATABASE_URL="postgresql+psycopg://compliance:compliance@localhost:5432/compliance"
 uvicorn app.main:app --reload
 ```
 
-### Document storage (Supabase)
+The schema is managed by Alembic and applied automatically on startup. After
+changing models: `alembic revision --autogenerate -m "describe the change"`.
 
-Uploaded documents are stored as real files in a private Supabase Storage
-bucket; downloads are served via short-lived signed URLs. Copy
-`backend/.env.example` to `backend/.env` and set:
-
-- `SUPABASE_URL` — project URL
-- `SUPABASE_SERVICE_KEY` — service-role key (server-side only; never commit or log)
-- `SUPABASE_BUCKET` — private bucket name (default `obligation-documents`)
-
-### Database migrations (Alembic)
-
-The schema is managed by Alembic. The app runs `alembic upgrade head`
-automatically on startup, so a fresh database is migrated to the latest schema
-with no manual step. After changing the SQLAlchemy models, generate a migration:
-
-```bash
-cd backend
-alembic revision --autogenerate -m "describe the change"
-alembic upgrade head   # apply locally (also applied on app startup)
-```
-
-## Frontend — local development
+## Frontend development
 
 ```bash
 cd frontend
 npm install
-
-# Point at a running backend (defaults to http://localhost:8000)
-export API_BASE_URL="http://localhost:8000"
-npm run dev          # http://localhost:3000
-
-npm test             # Vitest + Testing Library
-npm run build        # production build / typecheck
+npm run dev      # http://localhost:3000, expects the API at http://localhost:8000 (API_BASE_URL)
+npm test         # Vitest + Testing Library
+npm run build    # production build / typecheck
 ```
-
-The frontend renders only what the API allows: state transitions, the document
-gate, and the masked tax ID all come from the backend. UI language toggles
-between English and Spanish.
