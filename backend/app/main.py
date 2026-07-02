@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -27,6 +28,24 @@ _STATUS_BY_ERROR: dict[type[DomainError], int] = {
 
 def _error_body(error: DomainError) -> dict:
     return {"error": {"type": type(error).__name__, "message": str(error)}}
+
+
+def _validation_error_body(error: RequestValidationError) -> dict:
+    details = [
+        {
+            "loc": validation_error.get("loc", []),
+            "msg": validation_error.get("msg", "Invalid request"),
+            "type": validation_error.get("type", "value_error"),
+        }
+        for validation_error in error.errors()
+    ]
+    return {
+        "error": {
+            "type": "ValidationError",
+            "message": "Request validation failed",
+            "details": details,
+        }
+    }
 
 
 @asynccontextmanager
@@ -59,6 +78,12 @@ def create_app() -> FastAPI:
     async def handle_domain_error(_: Request, error: DomainError) -> JSONResponse:
         status_code = _STATUS_BY_ERROR.get(type(error), 400)
         return JSONResponse(status_code=status_code, content=_error_body(error))
+
+    @app.exception_handler(RequestValidationError)
+    async def handle_validation_error(
+        _: Request, error: RequestValidationError
+    ) -> JSONResponse:
+        return JSONResponse(status_code=422, content=_validation_error_body(error))
 
     app.include_router(health.router)
     app.include_router(obligations.router)
